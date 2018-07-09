@@ -20,6 +20,7 @@ void server_config::init(std::map<std::string, std::string> * m) {
 
 LineProgram::LineProgram() {
 	ls = new LineSecret() ;
+	//
 	link = new LineLink(LineLink::SERVER) ;
 	mp = new MysqlcPool() ;
 }
