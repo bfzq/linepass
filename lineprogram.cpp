@@ -34,14 +34,13 @@ LineProgram::~LineProgram() {
 int LineProgram::main(int argc, char **argv) {
 	initParameter(argc, argv) ;
 	if (cl->haveHelp()) {
-//		std::cout << "this is help." << std::endl ;
 		cl->printHelpInfo() ;
 		return 0 ;
 	}
 	//	intoDameon() ; // xcode 编辑期间关闭
 	getServerPara() ;
 	initMysqlPool() ;
-//	hideArg(argc,argv,"--password") ; // 隐藏密码
+//	hideArg(argc,argv,"--mysql-passwd=root") ; // 隐藏密码
 	tasks() ;
 	return 0 ;
 }
@@ -62,6 +61,7 @@ void LineProgram::getServerPara() {
 
 void LineProgram::hideArg(int argc, char **argv, const char *arg) {
 	for (int i = 1; i < argc; i++) {
+		
 		if (0 == strcmp(argv[i], arg)) {
 			for (int j = i + 1; j < argc; j++) {
 				argv[i] = argv[j] ;

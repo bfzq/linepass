@@ -48,8 +48,11 @@ bool ComLine::haveHelp() {
  #define MYSQLDB "mysql-db"
  */
 void ComLine::printHelpInfo() {
-	std::cout << "--mysql-port	" << std::endl ;
-	std::cout << "--mysql-host	" << std::endl ;
+	std::cout << "  --mysql-port	" << std::endl ;
+	std::cout << "  --mysql-host	" << std::endl ;
+	std::cout << "  --mysql-user	" << std::endl ;
+	std::cout << "--mysql-passwd	" << std::endl ;
+	std::cout << "    --mysql-db	" << std::endl ;
 }
 
 
