@@ -7,7 +7,7 @@
 
 using namespace std;
 using namespace CryptoPP;
-#pragma comment(lib, "cryptlib.lib" )  
+// #pragma comment(lib, "cryptlib.lib" )  
 
 std::string ECB_AESEncryptStr(std::string sKey, const char *plainText);
 std::string ECB_AESDecryptStr(std::string sKey, const char *cipherText);
