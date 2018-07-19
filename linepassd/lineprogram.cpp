@@ -81,9 +81,10 @@ void LineProgram::tasks() {
 	link->listenPort(sc.listen_port) ;
 	link->init() ;
 	link->serverListen() ;
+	std::cout << "f" << std::endl ;	
+	link->serverAccpet2() ;
 	link->serverAccpet([&](int client_socket) {
-		
-		
+	printf("asdasdg\n");	
 		//		if(mysqlc == nullptr) return false;
 		
 		/*
@@ -97,10 +98,12 @@ void LineProgram::tasks() {
 			if (ph.len > PROTO_HEAD_SIZE) {
 				uint32_t datalen = ph.len - PROTO_HEAD_SIZE ;
 				uint8_t* data = (uint8_t*)malloc(sizeof(uint8_t) * datalen) ;
+				std::cout << 1 << std::endl ;
 				if ((byte = recv(client_socket, data, datalen, 0)) <= 0) {
 					free(data) ;
 					continue ;
 				}
+				std::cout << 2 << std::endl ;
 				switch (ph.server) {
 					case LOGIN:{ // error:Cannot jump from switch statement to this case label # 因为switch case 中是不能定义对象的，因为只要是在大括号内定义的对象。所以只需要在case:后面加上大括号就OK
 						/*
@@ -109,8 +112,12 @@ void LineProgram::tasks() {
 						struct proto_msg pm ;
 						pm.server = LOGIN ;
 						uint32_t len ;
-						ls->setKey(LINETESTKEY) ;
-						uint8_t* unsafeData = ls->decipher(data) ;
+						// ls->setKey(LINETESTKEY) ;
+						// uint8_t* unsafeData = ls->decipher(data) ;
+						std::string aesKey = "0123456789ABCDEF0123456789ABCDEF";//256bits, also can be 128 bits or 192bits  
+   						std::string aesIV = "ABCDEF0123456789";//128 bits  
+   						uint8_t* unsafeData = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
+   						std::cout << 3 << std::endl ;
 						if(certify(unsafeData)) {
 							uint8_t* retStr = ls->encrypt((unsigned char*)"ok") ;
 							pm.len = AES::BLOCKSIZE ;
@@ -145,22 +152,22 @@ bool LineProgram::certify(uint8_t* buf) {
 	struct user_config uc;
 	bool retVal = false;
 	memcpy(&uc, buf, sizeof(user_config)) ;
-	MySQLC* local_mysql = mp->getMysqlCon() ;
-	std::string sql = "select 1 from users where username='" + std::string(uc.user_user) + "' and password='" + std::string(uc.user_password) + "';" ;
-	local_mysql->query(sql, [&retVal](MYSQL_ROW row) {
-		if (atoi(row[0]) == 1) {
-			std::cout << "1\n" ;
-			retVal = true ;
-			return true ;
-		}else {
-			retVal = false ;
-			return false ;
-		}
-	}, [&retVal]() {
-		retVal = false ;
-	}) ;
-	mp->backMysqlCon(local_mysql) ;
-	local_mysql = nullptr ;
+	printf("user:%s,password:%s",uc.user_user,uc.user_password) ;
+	//MySQLC* local_mysql = mp->getMysqlCon() ;
+	//std::string sql = "select 1 from users where username='" + std::string(uc.user_user) + "' and password='" + std::string(uc.user_password) + "';" ;
+	//local_mysql->query(sql, [&retVal](MYSQL_ROW row) {
+	//	if (atoi(row[0]) == 1) {
+	//		retVal = true ;
+	//		return true ;
+	//	}else {
+	//		retVal = false ;
+	//		return false ;
+	//	}
+	//}, [&retVal]() {
+	//	retVal = false ;
+	//}) ;
+	//mp->backMysqlCon(local_mysql) ;
+	//local_mysql = nullptr ;
 	
 	return retVal ;
 }

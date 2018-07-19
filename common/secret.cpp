@@ -1,7 +1,7 @@
 #include "secret.h"
 
 
-std::string ECB_AESEncryptStr(std::string sKey, const char *plainText)
+std::string ECB_AESEncryptStr(std::string sKey, const char *plainText, size_t len)
 {
     std::string outstr;
 
@@ -15,7 +15,8 @@ std::string ECB_AESEncryptStr(std::string sKey, const char *plainText)
 
     ECB_Mode_ExternalCipher::Encryption ecbEncryption(aesEncryption);
     StreamTransformationFilter ecbEncryptor(ecbEncryption, new HexEncoder(new StringSink(outstr)));
-    ecbEncryptor.Put((byte *)plainText, strlen(plainText));
+    // ecbEncryptor.Put((byte *)plainText, strlen(plainText));
+    ecbEncryptor.Put((byte *)plainText, len);
     ecbEncryptor.MessageEnd();
 
     return outstr;

@@ -3,7 +3,7 @@ CC = g++
 
 PROGRAM = linepass
 
-COMMON = ../common/
+COMMON = ../common
 
 MAKE = make
 
@@ -15,7 +15,7 @@ CFLAGS = -Wall -std=c++11 $(INC_DIR)
 LFLAGS += -ldl -lpthread --std=c++11
 
 
-OBJ = main.o command.o comprogram.o mainprogram.o comline.o link.o threadpool.o logs.o linesecret.o
+OBJ = main.o command.o comprogram.o mainprogram.o comline.o link.o threadpool.o logs.o linesecret.o secret.o
 
 $(PROGRAM):$(OBJ)
 	$(CC) $(DEBUG) $(LFLAGS) -o $(PROGRAM) $(OBJ) $(LIB_DIR)

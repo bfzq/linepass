@@ -78,21 +78,42 @@ bool LineLink::serverListen() {
 		perror("listen error") ;
 		return false ;
 	}
+	printf("hi4");
 	return true ;
 }
 
 
 bool LineLink::serverAccpet(std::function<void (int)> recv_block) {
+	printf("hi3\n");
 	while (true) {
 		int sin_size = sizeof(struct sockaddr_in) ;
 		int remote_socket ;
+		printf("hi1\n");
 		if ((remote_socket = accept(local_socket, (struct sockaddr *)&client_addr, (socklen_t *)&sin_size)) < 0) {
 			perror("accpet error") ;
 			return false ;
 		}
+		printf("hi\n");
 		threadPool.run(std::bind(recv_block, remote_socket)) ;
 	}
 	return true ;
+}
+
+
+bool LineLink::serverAccpet2() {
+        printf("hi3");
+	std::cout << "hi45" << std::endl ;
+       // while (true) {
+       //        int sin_size = sizeof(struct sockaddr_in) ;
+       //      int remote_socket ;
+       //         printf("hi1");
+       //         if ((remote_socket = accept(local_socket, (struct sockaddr *)&client_addr, (socklen_t *)&sin_size)) < 0) {
+       //                 perror("accpet error") ;
+       //                 return false ;
+       //         }
+       //         printf("hi");
+       // }
+        return true ;
 }
 
 
@@ -114,6 +135,7 @@ bool LineLink::clientConnect() {
 		perror("connect error") ;
 		return false ;
 	}
+	printf("connect ok\n");
 	return true ;
 }
 
@@ -146,9 +168,13 @@ bool LineLink::clientRevc(std::function<bool (struct proto_msg)> revc) {
 
 
 bool LineLink::clientSend(uint8_t* buf, size_t size) {
+	std::cout << "asdasd";
+	printf("%s",buf) ;
 	if (send(local_socket,buf,size,0)) {
+		printf("send succ") ;
 		return true ;
 	}
+	printf("send err") ;
 	return false ;
 }
 
@@ -177,55 +203,3 @@ bool LineLink::parser(uint8_t * buf,uint32_t getlen, struct proto_head & ph) {
 	ph.len = ntohl(*((uint32_t*)(buf + 4))) ;
 	return true ;
 }
-
-
-//uint32_t LineLink::encode(uint8_t* buf, struct proto_head ph, std::function<struct proto_msg()> subencode) {
-//	*buf = ph.version ;
-//	buf++ ;
-//	*buf = PROTO_MAGIC ;
-//	buf++ ;
-//	struct proto_msg pm = subencode() ;
-//	printf("%d,%d",pm.server,htons(pm.server)) ;
-//	*((uint16_t*)buf) = htons(pm.server) ;
-//	buf += 2 ;
-//	uint32_t len = ph.len + sizeof(pm.data) ;
-//	*(uint32_t*)buf = htonl(len) ;
-//
-//	return len ;
-//}
-
-//void LineLink::clientRecv() {
-//	int len ;
-//	char buf[BUFSIZ],buf1[BUFSIZ];
-//	len=recv(local_socket,buf,BUFSIZ,0);//接收服务器端信息
-//	buf[len]='/0';
-//	printf("%s\n",buf); //打印服务器端信息
-//}
-
-
-
-//void LineLink::recvAndSend() { //std::function<bool (char *)> recv_block
-//	while(1)
-//	{
-//		char buf[BUFSIZ];
-//		int len ;
-//		printf("Enter string to send:");
-//		scanf("%s",buf);
-//		if(!strcmp(buf,"quit"))
-//		   break;
-//		   len=send(local_socket,buf,strlen(buf),0);
-//		   len=recv(local_socket,buf,BUFSIZ,0);
-//		   buf[len]='\0';
-//		   printf("received:%s\n",buf);
-//	}
-////	while (recv_block());
-//}
-
-
-
-
-
-
-
-
-

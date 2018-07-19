@@ -71,6 +71,7 @@ public:
 	/* 服务器函数 */
 	bool serverListen() ; // 监听客户端连接请求
 	bool serverAccpet(std::function<void (int)> recv_block) ; // 等待客户端连接请求
+	bool serverAccpet2() ; // 等待客户端连接请求
 	/* 客户端函数 */
 	void clientHost(std::string host) ;
 //	void clientRecv() ;

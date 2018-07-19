@@ -16,6 +16,7 @@
 #include "struct.h"
 #include <string>
 #include "logs.hpp"
+#include "secret.h"
 
 #define CONNECTPORT "connect-port"
 #define CONNECTHOST "connect-host"

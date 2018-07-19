@@ -44,7 +44,7 @@ bool ComProgram::connectServer() {
 	link->clientHost(cc.connect_host) ;
 	
 	
-	link->init() ;
+	if(!link->init()) return false;
 	return link->clientConnect() ;
 }
 
@@ -67,25 +67,25 @@ bool ComProgram::interactive() {
 		}
 		
 	}
+	return true ;
 }
 
 
 
 
 int ComProgram::main(int argc, char **argv) {
-	struct proto_msg pm ;
-	pm.data = (uint8_t*)malloc(sizeof(uint8_t) * 10) ;
-	memcpy(pm.data, "nihao", 5) ;
-	pm.server = 4 ;
-	pm.len = 5 ;
-	uint32_t len = 0 ;
-	uint8_t* pData = NULL ;
-	pData = link->encode(pm, len) ;
+	// struct proto_msg pm ;
+	// pm.data = (uint8_t*)malloc(sizeof(uint8_t) * 10) ;
+	// memcpy(pm.data, "nihao", 5) ;
+	// pm.server = 4 ;
+	// pm.len = 5 ;
+	// uint32_t len = 0 ;
+	// uint8_t* pData = NULL ;
+	// pData = link->encode(pm, len) ;
 	
 	
-	struct proto_head ph2 ;
-	link->parser(pData, PROTO_HEAD_SIZE, ph2) ;
-	
+	// struct proto_head ph2 ;
+	// link->parser(pData, PROTO_HEAD_SIZE, ph2) ;
 	
 	
 	
@@ -97,14 +97,17 @@ int ComProgram::main(int argc, char **argv) {
 	/*
 	 * 连接服务器，失败退出
 	 */
-	if (!connectServer()) return 1 ;
+	if (!connectServer()) {
+		log("err: can not connect linepasswd server.") ;
+		return 1 ;
+	}
 	
 	/*
 	 * 信息认证
 	 */
 	if(!certify(link)) {
 		link->linkClose() ;
-		log("err: can not connect linepasswd server.") ;
+		log("err: certify.") ;
 		return 1;
 	}
 	
@@ -120,32 +123,49 @@ bool ComProgram::certify(LineLink* lk) {
 	 *	转移用户信息
 	 */
 	
-	struct user_config uc ;
-	struct proto_msg pm ;
+	struct user_config uc ; // struct.h
+	struct proto_msg pm ; // link.hpp
 	
 //	uc.user_user = cc.connect_user ;
 //	uc.user_password = cc.connect_password ;
 	
+	// 把用户信息复制到uc
 	strcpy(uc.user_user, cc.connect_user.c_str()) ;
 	strcpy(uc.user_password, cc.connect_password.c_str()) ;
-	uint32_t size = sizeof(uc) ;
 
-	int8_t tmp[256] = "16789sdfasdfasdfwefwef wef afd awef ew fasd f afsad fsad fsd fsad f32f32f adf as\0 adfas df 012345";
+	size_t size = sizeof(uc) ;
+	char* plain = (char*)malloc(sizeof(char) * size) ;
+	memcpy(plain,(char*)&uc,size) ;
+
+   	std::string aesKey = "0123456789ABCDEF0123456789ABCDEF";//256bits, also can be 128 bits or 192bits  
+   	std::string aesIV = "ABCDEF0123456789";//128 bits  
 	
 
-	pm.data = ls->encrypt(tmp) ;
+	// int8_t tmp[256] = "16789sdfasdfasdfwefwef wef afd awef ew fasd f afsad fsad fsd fsad f32f32f adf as\0 adfas df 012345";
 	
+
+
+   	std::string data = ECB_AESEncryptStr(aesKey,plain,size) ;
+	// pm.data = ls->encrypt(tmp) ;
+	pm.data = (uint8_t*)data.c_str() ;
+	
+
 	struct user_config uc2 ;
-	uint8_t* t = ls->decipher(pm.data) ;
-	uint8_t* t2 = ls->encrypt(t) ;
-	
-	pm.len = AES::BLOCKSIZE;
+	std::string data2 = ECB_AESDecryptStr(aesKey, (const char*)pm.data);
+	memcpy(&uc2,data2.c_str(),data2.size()) ;
+	//printf("%s,%s,%s\n",pm.data,uc2.user_user,uc2.user_password) ;
+
+	pm.len = data.size();
 	pm.server = LOGIN ;
-	uint8_t* pdata = link->encode(pm, size) ;
+	uint32_t package_size;
+	uint8_t* pdata = link->encode(pm, package_size) ;
 	/*
 	 *	发送登录验证信息
 	 */
-	lk->clientSend(pdata, size) ;
+	printf("%s\n",pdata+PROTO_HEAD_SIZE);
+	if(!lk->clientSend(pdata, package_size)) {
+		return false;
+	}
 	/*
 	 *	返回报文
 	 */
