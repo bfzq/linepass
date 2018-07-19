@@ -81,12 +81,7 @@ void LineProgram::tasks() {
 	link->listenPort(sc.listen_port) ;
 	link->init() ;
 	link->serverListen() ;
-	std::cout << "f" << std::endl ;	
-	link->serverAccpet2() ;
 	link->serverAccpet([&](int client_socket) {
-	printf("asdasdg\n");	
-		//		if(mysqlc == nullptr) return false;
-		
 		/*
 		 * 交互
 		 */
@@ -98,37 +93,40 @@ void LineProgram::tasks() {
 			if (ph.len > PROTO_HEAD_SIZE) {
 				uint32_t datalen = ph.len - PROTO_HEAD_SIZE ;
 				uint8_t* data = (uint8_t*)malloc(sizeof(uint8_t) * datalen) ;
-				std::cout << 1 << std::endl ;
 				if ((byte = recv(client_socket, data, datalen, 0)) <= 0) {
 					free(data) ;
 					continue ;
 				}
-				std::cout << 2 << std::endl ;
 				switch (ph.server) {
-					case LOGIN:{ // error:Cannot jump from switch statement to this case label # 因为switch case 中是不能定义对象的，因为只要是在大括号内定义的对象。所以只需要在case:后面加上大括号就OK
+					// 登录验证
+					case LOGIN:{ // error:Cannot jump from switch statement to this case label \
+						# 因为switch case 中是不能定义对象的，因为只要是在大括号内定义的对象。\
+						所以只需要在case:后面加上大括号就OK.
+						
+						
+						
+						
 						/*
-						 * 验证客户信息
+						 *	解密数据包
+						 */
+//						std::string aesKey = "0123456789ABCDEF0123456789ABCDEF";//256bits, also can be 128 bits or 192bits
+//   						std::string aesIV = "ABCDEF0123456789";//128 bits  
+   						uint8_t* unsafeData = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
+						
+						// 验证数据包
+						if(certify(unsafeData)) {
+							// 验证成功，返回ok
+							
+						}else {
+							// 验证成功，返回err
+						}
+						
+						/*
+						 * 返回客户信息
 						 */
 						struct proto_msg pm ;
 						pm.server = LOGIN ;
-						uint32_t len ;
-						// ls->setKey(LINETESTKEY) ;
-						// uint8_t* unsafeData = ls->decipher(data) ;
-						std::string aesKey = "0123456789ABCDEF0123456789ABCDEF";//256bits, also can be 128 bits or 192bits  
-   						std::string aesIV = "ABCDEF0123456789";//128 bits  
-   						uint8_t* unsafeData = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
-   						std::cout << 3 << std::endl ;
-						if(certify(unsafeData)) {
-							uint8_t* retStr = ls->encrypt((unsigned char*)"ok") ;
-							pm.len = AES::BLOCKSIZE ;
-							pm.data = retStr ;
-							//							memcpy(pm.data, retStr, pm.len) ;
-						}else {
-							uint8_t* retStr = ls->encrypt((unsigned char*)"err") ;
-							pm.len = AES::BLOCKSIZE ;
-							pm.data = retStr ;
-							//							memcpy(pm.data, retStr, pm.len) ;
-						}
+						uint32_t len ; // 网络报文长度
 						uint8_t* pdata = link->encode(pm, len) ;
 						send(client_socket, pdata, len, 0) ;
 						break;

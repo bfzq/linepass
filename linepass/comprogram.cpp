@@ -74,20 +74,6 @@ bool ComProgram::interactive() {
 
 
 int ComProgram::main(int argc, char **argv) {
-	// struct proto_msg pm ;
-	// pm.data = (uint8_t*)malloc(sizeof(uint8_t) * 10) ;
-	// memcpy(pm.data, "nihao", 5) ;
-	// pm.server = 4 ;
-	// pm.len = 5 ;
-	// uint32_t len = 0 ;
-	// uint8_t* pData = NULL ;
-	// pData = link->encode(pm, len) ;
-	
-	
-	// struct proto_head ph2 ;
-	// link->parser(pData, PROTO_HEAD_SIZE, ph2) ;
-	
-	
 	
 	
 	cl->getKeyValue(argc, argv) ;
@@ -136,33 +122,18 @@ bool ComProgram::certify(LineLink* lk) {
 	size_t size = sizeof(uc) ;
 	char* plain = (char*)malloc(sizeof(char) * size) ;
 	memcpy(plain,(char*)&uc,size) ;
-
-   	std::string aesKey = "0123456789ABCDEF0123456789ABCDEF";//256bits, also can be 128 bits or 192bits  
-   	std::string aesIV = "ABCDEF0123456789";//128 bits  
 	
-
-	// int8_t tmp[256] = "16789sdfasdfasdfwefwef wef afd awef ew fasd f afsad fsad fsd fsad f32f32f adf as\0 adfas df 012345";
-	
-
-
    	std::string data = ECB_AESEncryptStr(aesKey,plain,size) ;
-	// pm.data = ls->encrypt(tmp) ;
 	pm.data = (uint8_t*)data.c_str() ;
 	
-
-	struct user_config uc2 ;
-	std::string data2 = ECB_AESDecryptStr(aesKey, (const char*)pm.data);
-	memcpy(&uc2,data2.c_str(),data2.size()) ;
-	//printf("%s,%s,%s\n",pm.data,uc2.user_user,uc2.user_password) ;
-
 	pm.len = data.size();
 	pm.server = LOGIN ;
 	uint32_t package_size;
 	uint8_t* pdata = link->encode(pm, package_size) ;
+	
 	/*
 	 *	发送登录验证信息
 	 */
-	printf("%s\n",pdata+PROTO_HEAD_SIZE);
 	if(!lk->clientSend(pdata, package_size)) {
 		return false;
 	}

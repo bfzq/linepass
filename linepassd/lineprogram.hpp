@@ -17,6 +17,7 @@
 #include "struct.h"
 #include "mysqlcpool.hpp"
 #include "secret.h"
+#include "const.h"
 
 #define LISTENPORT "listen-port"
 #define POOLNUM "pool-num"

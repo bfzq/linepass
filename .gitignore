@@ -33,3 +33,4 @@
 
 # xcode
 *.xcodeproj
+.DS_Store

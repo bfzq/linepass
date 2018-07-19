@@ -9,6 +9,7 @@
 #ifndef comprogram_hpp
 #define comprogram_hpp
 #include "mainprogram.hpp"
+#include "const.h"
 #include "linesecret.hpp"
 #include "link.hpp"
 #include "comline.hpp"
@@ -17,6 +18,7 @@
 #include <string>
 #include "logs.hpp"
 #include "secret.h"
+
 
 #define CONNECTPORT "connect-port"
 #define CONNECTHOST "connect-host"

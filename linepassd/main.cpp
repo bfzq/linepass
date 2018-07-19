@@ -9,7 +9,7 @@
 #include <iostream>
 #include <unistd.h>
 #include "lineprogram.hpp"
-//#include "secret.h"
+
 int main(int argc, char * argv[]) {
       LineProgram* lp = new LineProgram() ;
       int retVal = lp->main(argc, argv) ;

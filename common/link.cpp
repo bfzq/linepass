@@ -100,23 +100,6 @@ bool LineLink::serverAccpet(std::function<void (int)> recv_block) {
 }
 
 
-bool LineLink::serverAccpet2() {
-        printf("hi3");
-	std::cout << "hi45" << std::endl ;
-       // while (true) {
-       //        int sin_size = sizeof(struct sockaddr_in) ;
-       //      int remote_socket ;
-       //         printf("hi1");
-       //         if ((remote_socket = accept(local_socket, (struct sockaddr *)&client_addr, (socklen_t *)&sin_size)) < 0) {
-       //                 perror("accpet error") ;
-       //                 return false ;
-       //         }
-       //         printf("hi");
-       // }
-        return true ;
-}
-
-
 bool LineLink::linkClose() {
 	close(local_socket) ;
 	return true ;
@@ -143,7 +126,7 @@ bool LineLink::clientConnect() {
 bool LineLink::clientRevc(std::function<bool (struct proto_msg)> revc) {
 		uint32_t len ;
 		uint8_t buf[PROTO_HEAD_SIZE];
-		if((len=recv(local_socket,buf,PROTO_HEAD_SIZE,0)) >= 0) { //接收服务器端信息
+		if((len=recv(local_socket,buf,PROTO_HEAD_SIZE,0)) > 0) { //接收服务器端信息
 			struct proto_head ph ;
 			if (!parser(buf, len, ph)) {
 				return false ;
