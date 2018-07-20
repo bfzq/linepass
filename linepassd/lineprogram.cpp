@@ -36,7 +36,7 @@ int LineProgram::main(int argc, char **argv) {
 		cl->printHelpInfo() ;
 		return 0 ;
 	}
-	//	intoDameon() ; // xcode 编辑期间关闭
+//	intoDameon() ; // xcode 编辑期间关闭
 	getServerPara() ;
 	initMysqlPool() ;
 //	hideArg(argc,argv,"--mysql-passwd=root") ; // 隐藏密码
@@ -89,36 +89,38 @@ void LineProgram::tasks() {
 		uint8_t buf[PROTO_HEAD_SIZE] ; // 缓存
 		while ((byte = recv(client_socket, buf, PROTO_HEAD_SIZE, 0)) > 0) { // 获取到客户端的数据 buf
 			struct proto_head ph ;
-			if(!link->parser(buf, byte, ph)) continue;
+			if(!link->parser(buf, byte, &ph)) continue;
 			if (ph.len > PROTO_HEAD_SIZE) {
 				uint32_t datalen = ph.len - PROTO_HEAD_SIZE ;
-				uint8_t* data = (uint8_t*)malloc(sizeof(uint8_t) * datalen) ;
+				int8_t* data = (int8_t*)malloc(sizeof(int8_t) * (datalen + 1)) ;
 				if ((byte = recv(client_socket, data, datalen, 0)) <= 0) {
 					free(data) ;
 					continue ;
 				}
+				data[datalen] = '\0' ;
 				switch (ph.server) {
 					// 登录验证
 					case LOGIN:{ // error:Cannot jump from switch statement to this case label \
 						# 因为switch case 中是不能定义对象的，因为只要是在大括号内定义的对象。\
 						所以只需要在case:后面加上大括号就OK.
 						
-						
-						
-						
 						/*
 						 *	解密数据包
 						 */
-//						std::string aesKey = "0123456789ABCDEF0123456789ABCDEF";//256bits, also can be 128 bits or 192bits
-//   						std::string aesIV = "ABCDEF0123456789";//128 bits  
+						
+						
+//						printf("接收密文:%s,长度:%d",data,datalen) ;
    						uint8_t* unsafeData = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
 						
+						
+						std::string backtext ;
 						// 验证数据包
 						if(certify(unsafeData)) {
 							// 验证成功，返回ok
-							
+							backtext = CALLBACKOK ;
 						}else {
 							// 验证成功，返回err
+							backtext = CALLBACKERR ;
 						}
 						
 						/*
@@ -126,6 +128,13 @@ void LineProgram::tasks() {
 						 */
 						struct proto_msg pm ;
 						pm.server = LOGIN ;
+						std::string sedata = ECB_AESEncryptStr(aesKey, backtext.c_str(), backtext.size()) ;
+						pm.data = (int8_t*)sedata.c_str() ;
+						
+						
+						
+						pm.len = sedata.size() ;
+//						printf("发送密文:%s,长度:%d\n",pm.data,pm.len) ;
 						uint32_t len ; // 网络报文长度
 						uint8_t* pdata = link->encode(pm, len) ;
 						send(client_socket, pdata, len, 0) ;
@@ -150,7 +159,7 @@ bool LineProgram::certify(uint8_t* buf) {
 	struct user_config uc;
 	bool retVal = false;
 	memcpy(&uc, buf, sizeof(user_config)) ;
-	printf("user:%s,password:%s",uc.user_user,uc.user_password) ;
+	printf("user:%s,password:%s\n",uc.user_user,uc.user_password) ;
 	//MySQLC* local_mysql = mp->getMysqlCon() ;
 	//std::string sql = "select 1 from users where username='" + std::string(uc.user_user) + "' and password='" + std::string(uc.user_password) + "';" ;
 	//local_mysql->query(sql, [&retVal](MYSQL_ROW row) {
@@ -166,22 +175,9 @@ bool LineProgram::certify(uint8_t* buf) {
 	//}) ;
 	//mp->backMysqlCon(local_mysql) ;
 	//local_mysql = nullptr ;
-	
+	retVal = true ;
 	return retVal ;
 }
-
-//bool LineProgram::certify(int client_socket) {
-//	char buf[BUFSIZ] ;
-//	struct user_config uc;
-//	if (recv(client_socket, buf, BUFSIZ, 0) > 0) {
-//		memcpy(&uc, buf, BUFSIZ) ;
-//		std::cout << uc.user_user << ' ' << uc.user_password << std::endl ;
-//		return true ;
-//	}else {
-//		return false ;
-//	}
-//}
-
 
 int LineProgram::main() {
 	//	intoDameon() ; // xcode 编辑期间关闭

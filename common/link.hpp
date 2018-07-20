@@ -46,7 +46,7 @@ struct proto_head {
 struct proto_msg {
 	uint32_t len ; // 结构体长度
 	uint16_t server ; // 标识服务 2 byte 1:字符串
-	uint8_t* data ; //
+	int8_t* data ; //
 };
 
 
@@ -77,7 +77,6 @@ public:
 	void clientPort(in_port_t) ;
 	bool clientConnect() ;
 	
-
 	bool clientRevc(std::function<bool(struct proto_msg)> revc);
 	
 	
@@ -89,7 +88,7 @@ public:
 	/* 网络协议打包 */
 	uint8_t* encode(struct proto_msg, uint32_t& len) ;
 	/* 网络协议解包 */
-	bool parser(uint8_t*,uint32_t, struct proto_head&) ;
+	bool parser(uint8_t*,uint32_t, struct proto_head*) ;
 };
 
 #endif /* link_hpp */

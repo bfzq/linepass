@@ -26,6 +26,7 @@ LineLink::LineLink(JOB job) {
 			server_addr.sin_addr.s_addr = INADDR_ANY ; // 服务器IP地址--允许连接到所有本地地址上
 			break;
 		case CLIENT:
+			server_addr.sin_family = AF_INET ;
 			break;
 	}
 }
@@ -33,6 +34,7 @@ LineLink::LineLink(JOB job) {
 
 void LineLink::listenOrConnectPort(in_port_t port) {
 	server_addr.sin_port = htons(port) ;
+//	server_addr.sin_addr
 }
 
 void LineLink::listenPort(in_port_t port) {
@@ -78,22 +80,18 @@ bool LineLink::serverListen() {
 		perror("listen error") ;
 		return false ;
 	}
-	printf("hi4");
 	return true ;
 }
 
 
 bool LineLink::serverAccpet(std::function<void (int)> recv_block) {
-	printf("hi3\n");
 	while (true) {
 		int sin_size = sizeof(struct sockaddr_in) ;
 		int remote_socket ;
-		printf("hi1\n");
 		if ((remote_socket = accept(local_socket, (struct sockaddr *)&client_addr, (socklen_t *)&sin_size)) < 0) {
 			perror("accpet error") ;
 			return false ;
 		}
-		printf("hi\n");
 		threadPool.run(std::bind(recv_block, remote_socket)) ;
 	}
 	return true ;
@@ -118,7 +116,6 @@ bool LineLink::clientConnect() {
 		perror("connect error") ;
 		return false ;
 	}
-	printf("connect ok\n");
 	return true ;
 }
 
@@ -128,13 +125,14 @@ bool LineLink::clientRevc(std::function<bool (struct proto_msg)> revc) {
 		uint8_t buf[PROTO_HEAD_SIZE];
 		if((len=recv(local_socket,buf,PROTO_HEAD_SIZE,0)) > 0) { //接收服务器端信息
 			struct proto_head ph ;
-			if (!parser(buf, len, ph)) {
+			if (!parser(buf, len, &ph)) {
 				return false ;
 			}
 			if (ph.len > PROTO_HEAD_SIZE) {
 				uint32_t datalen = ph.len - PROTO_HEAD_SIZE ;
-				uint8_t* data = (uint8_t*)malloc(sizeof(uint8_t) * datalen) ;
+				int8_t* data = (int8_t*)malloc(sizeof(int8_t) * (datalen + 1)) ;
 				if ((len = recv(local_socket, data, datalen, 0)) > 0) {
+					data[datalen] = '\0' ;
 					if (len == ph.len - PROTO_HEAD_SIZE) {
 						struct proto_msg pm ;
 						pm.server = LOGIN ;
@@ -144,20 +142,16 @@ bool LineLink::clientRevc(std::function<bool (struct proto_msg)> revc) {
 					}
 				}
 			}
-			
 		}
 		return false ;
 }
 
 
 bool LineLink::clientSend(uint8_t* buf, size_t size) {
-	std::cout << "asdasd";
-	printf("%s",buf) ;
 	if (send(local_socket,buf,size,0)) {
-		printf("send succ") ;
 		return true ;
 	}
-	printf("send err") ;
+	perror("send text err.") ;
 	return false ;
 }
 
@@ -173,16 +167,16 @@ uint8_t* LineLink::encode(struct proto_msg pm, uint32_t& len) {
 }
 
 
-bool LineLink::parser(uint8_t * buf,uint32_t getlen, struct proto_head & ph) {
+bool LineLink::parser(uint8_t * buf,uint32_t getlen, struct proto_head *ph) {
 	if (getlen < PROTO_HEAD_SIZE) {
 		return false ;
 	}
-	ph.version = *(buf) ;
-	ph.magic = *(buf + 1) ;
-	if (ph.magic != PROTO_MAGIC) {
+	(*ph).version = *(buf) ;
+	(*ph).magic = *(buf + 1) ;
+	if ((*ph).magic != PROTO_MAGIC) {
 		return false ;
 	}
-	ph.server = (Server)ntohs(*((uint16_t*)(buf + 2))) ;
-	ph.len = ntohl(*((uint32_t*)(buf + 4))) ;
+	(*ph).server = (Server)ntohs(*((uint16_t*)(buf + 2))) ;
+	(*ph).len = ntohl(*((uint32_t*)(buf + 4))) ;
 	return true ;
 }
