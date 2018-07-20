@@ -34,3 +34,7 @@
 # xcode
 *.xcodeproj
 .DS_Store
+
+# project
+linepass
+linepassd
