@@ -52,7 +52,7 @@ bool ComProgram::connectServer() {
 bool ComProgram::interactive() {
 	struct proto_msg pm ;
 	while (cmd->input()) {
-		pm.data = (uint8_t*)malloc(strlen(cmd->cmd())) ;
+		pm.data = (int8_t*)malloc(strlen(cmd->cmd())*sizeof(int8_t)) ;
 		memcpy(pm.data, cmd->cmd(), strlen(cmd->cmd())) ;
 		pm.server = COMMAND ;
 		pm.len = strlen(cmd->cmd()) ;
@@ -98,9 +98,10 @@ int ComProgram::main(int argc, char **argv) {
 	}
 	
 	
-	if (!interactive()) {
-		return 1 ;
-	}
+//	if (!interactive()) {
+//		return 1 ;
+//	}
+//	getchar() ;
 	return 0 ;
 }
 
@@ -124,12 +125,13 @@ bool ComProgram::certify(LineLink* lk) {
 	memcpy(plain,(char*)&uc,size) ;
 	
    	std::string data = ECB_AESEncryptStr(aesKey,plain,size) ;
-	pm.data = (uint8_t*)data.c_str() ;
-	
+	pm.data = (int8_t*)data.c_str() ;
 	pm.len = data.size();
 	pm.server = LOGIN ;
 	uint32_t package_size;
 	uint8_t* pdata = link->encode(pm, package_size) ;
+	
+//	printf("发送密文:%s,长度:%d",pm.data,pm.len) ;
 	
 	/*
 	 *	发送登录验证信息
@@ -137,15 +139,23 @@ bool ComProgram::certify(LineLink* lk) {
 	if(!lk->clientSend(pdata, package_size)) {
 		return false;
 	}
+	
 	/*
 	 *	返回报文
 	 */
 	return lk->clientRevc([&](struct proto_msg pm) {
-		if (!strcmp((const char *)ls->decipher(pm.data), CALLBACKOK)) {
-			return true ;
-		}else {
-			return false ;
+		try {
+			const char* tmp_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data).c_str() ;
+//			printf("接收密文:%s,长度:%d,解密:%s",pm.data,pm.len,tmp_str) ;
+			if (!strcmp(tmp_str, CALLBACKOK)) {
+				return true ;
+			}else {
+				return false ;
+			}
+		} catch (Exception &e) {
+			printf("%s\n",e.what()) ;
 		}
+		
 	}) ;
 }
 
