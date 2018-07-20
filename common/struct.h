@@ -12,7 +12,7 @@
 #include <ctime>
 
 #define CALLBACKOK "ok"
-
+#define CALLBACKERR "err"
 //#define LOGIN 0
 //#define COMMAND 1
 
