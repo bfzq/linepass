@@ -159,23 +159,22 @@ bool LineProgram::certify(uint8_t* buf) {
 	struct user_config uc;
 	bool retVal = false;
 	memcpy(&uc, buf, sizeof(user_config)) ;
-	printf("user:%s,password:%s\n",uc.user_user,uc.user_password) ;
-	//MySQLC* local_mysql = mp->getMysqlCon() ;
-	//std::string sql = "select 1 from users where username='" + std::string(uc.user_user) + "' and password='" + std::string(uc.user_password) + "';" ;
-	//local_mysql->query(sql, [&retVal](MYSQL_ROW row) {
-	//	if (atoi(row[0]) == 1) {
-	//		retVal = true ;
-	//		return true ;
-	//	}else {
-	//		retVal = false ;
-	//		return false ;
-	//	}
-	//}, [&retVal]() {
-	//	retVal = false ;
-	//}) ;
-	//mp->backMysqlCon(local_mysql) ;
-	//local_mysql = nullptr ;
-	retVal = true ;
+//	printf("user:%s,password:%s\n",uc.user_user,uc.user_password) ;
+	MySQLC* local_mysql = mp->getMysqlCon() ;
+	std::string sql = "select password from users where username='" + std::string(uc.user_user) + "'" ;
+	local_mysql->query(sql, [&retVal,&uc](MYSQL_ROW row) {
+		if (strcmp(uc.user_password, ECB_AESDecryptStr(aesDbKey,row[0]).c_str()) == 0) {
+			retVal = true ;
+		}else {
+			retVal = false ;
+		}
+		return true ;
+	}, [&retVal]() {
+		retVal = false ;
+	}) ;
+	mp->backMysqlCon(local_mysql) ;
+	local_mysql = nullptr ;
+////	retVal = true ;
 	return retVal ;
 }
 
