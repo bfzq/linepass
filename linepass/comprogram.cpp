@@ -52,18 +52,21 @@ bool ComProgram::connectServer() {
 bool ComProgram::interactive() {
 	struct proto_msg pm ;
 	while (cmd->input()) {
-		pm.data = (int8_t*)malloc(strlen(cmd->cmd())*sizeof(int8_t)) ;
-		memcpy(pm.data, cmd->cmd(), strlen(cmd->cmd())) ;
+//		pm.data = (int8_t*)malloc(strlen(cmd->cmd())*sizeof(int8_t)) ;
+//		memcpy(pm.data, cmd->cmd(), strlen(cmd->cmd())) ;
+		std::string cmd_str = ECB_AESEncryptStr(aesKey, cmd->cmd(), strlen(cmd->cmd())) ;
 		pm.server = COMMAND ;
-		pm.len = strlen(cmd->cmd()) ;
+		pm.len = cmd_str.size() ;
+		pm.data = (int8_t*)cmd_str.c_str() ;
 		uint32_t len = 0 ;
 		uint8_t* pData = NULL ;
 		pData = link->encode(pm, len) ;
 		if(link->clientSend(pData, len)) {
-//			link->clientRevc([](uint8_t * restr){
-//				std::cout << restr << std::endl ;
-//				return true ;
-//			}) ;
+			link->clientRevc([](struct proto_msg pm){
+				std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
+				printf("%s\n",back_str.c_str()) ;
+				return true ;
+			}) ;
 		}
 		
 	}
@@ -98,9 +101,9 @@ int ComProgram::main(int argc, char **argv) {
 	}
 	
 	
-//	if (!interactive()) {
-//		return 1 ;
-//	}
+	if (!interactive()) {
+		return 1 ;
+	}
 //	getchar() ;
 	return 0 ;
 }
@@ -154,6 +157,7 @@ bool ComProgram::certify(LineLink* lk) {
 			}
 		} catch (Exception &e) {
 			printf("%s\n",e.what()) ;
+			return false ;
 		}
 		
 	}) ;

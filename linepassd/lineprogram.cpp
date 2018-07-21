@@ -77,6 +77,24 @@ void LineProgram::initParameter(int argc, char **argv) {
 }
 
 
+void LineProgram::commandWork(int client_socket,int8_t *cmd) {
+	printf("%s\n",cmd) ;
+	/*
+	 * 返回客户信息
+	 */
+	struct proto_msg pm ;
+	pm.server = COMMAND ;
+	// 返回报文加密
+	std::string sedata = ECB_AESEncryptStr(aesKey, (const char*)cmd, strlen((const char*)cmd)) ;
+	pm.data = (int8_t*)sedata.c_str() ;
+	pm.len = sedata.size() ;
+	uint32_t len ; // 网络报文长度
+	
+	uint8_t* pdata = link->encode(pm, len) ;
+	send(client_socket, pdata, len, 0) ;
+}
+
+
 void LineProgram::tasks() {
 	link->listenPort(sc.listen_port) ;
 	link->init() ;
@@ -98,21 +116,20 @@ void LineProgram::tasks() {
 					continue ;
 				}
 				data[datalen] = '\0' ;
+				
+				/*
+				 *	解密数据包
+				 */
+				int8_t* unsafeData = (int8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
+				
+				
 				switch (ph.server) {
 					// 登录验证
 					case LOGIN:{ // error:Cannot jump from switch statement to this case label \
 						# 因为switch case 中是不能定义对象的，因为只要是在大括号内定义的对象。\
 						所以只需要在case:后面加上大括号就OK.
 						
-						/*
-						 *	解密数据包
-						 */
-						
-						
-//						printf("接收密文:%s,长度:%d",data,datalen) ;
-   						uint8_t* unsafeData = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
-						
-						
+						// 记录返回报文
 						std::string backtext ;
 						// 验证数据包
 						if(certify(unsafeData)) {
@@ -128,20 +145,18 @@ void LineProgram::tasks() {
 						 */
 						struct proto_msg pm ;
 						pm.server = LOGIN ;
+						// 返回报文加密
 						std::string sedata = ECB_AESEncryptStr(aesKey, backtext.c_str(), backtext.size()) ;
 						pm.data = (int8_t*)sedata.c_str() ;
-						
-						
-						
 						pm.len = sedata.size() ;
-//						printf("发送密文:%s,长度:%d\n",pm.data,pm.len) ;
 						uint32_t len ; // 网络报文长度
+						
 						uint8_t* pdata = link->encode(pm, len) ;
 						send(client_socket, pdata, len, 0) ;
 						break;
 					}
 					case COMMAND:
-						
+						commandWork(client_socket,unsafeData) ;
 						break ;
 					default:
 						break;
@@ -155,7 +170,7 @@ void LineProgram::tasks() {
 	}) ;
 }
 
-bool LineProgram::certify(uint8_t* buf) {
+bool LineProgram::certify(int8_t* buf) {
 	struct user_config uc;
 	bool retVal = false;
 	memcpy(&uc, buf, sizeof(user_config)) ;
