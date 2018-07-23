@@ -7,3 +7,10 @@ show all
 show xxx 
 put
 
+```
+./linepass --connect-port=8088 --connect-host=127.0.0.1 --connect-user=admin --connect-password=admin
+```
+
+```
+./linepassd --listen-port=8088 --pool-num=8 --mysql-port=3306 --mysql-host=127.0.0.1 --mysql-user=root --mysql-passwd=root --mysql-db=linepass
+```
