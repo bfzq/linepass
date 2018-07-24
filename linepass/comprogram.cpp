@@ -52,21 +52,24 @@ bool ComProgram::connectServer() {
 bool ComProgram::interactive() {
 	struct proto_msg pm ;
 	while (cmd->input()) {
-		std::string cmd_str = ECB_AESEncryptStr(aesKey, cmd->cmd(), strlen(cmd->cmd())) ;
-		pm.server = COMMAND ;
-		pm.len = cmd_str.size() ;
-		pm.data = (int8_t*)cmd_str.c_str() ;
-		uint32_t len = 0 ;
-		uint8_t* pData = NULL ;
-		pData = link->encode(pm, len) ;
-		if(link->clientSend(pData, len)) {
-			link->clientRevc([](struct proto_msg pm){
-				std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
-				printf("%s\n",back_str.c_str()) ;
-				return true ;
-			}) ;
+		if (!strcmp(cmd->cmd(), "exit")) {
+			return false ;
+		} else {
+			std::string cmd_str = ECB_AESEncryptStr(aesKey, cmd->cmd(), strlen(cmd->cmd())) ;
+			pm.server = COMMAND ;
+			pm.len = cmd_str.size() ;
+			pm.data = (int8_t*)cmd_str.c_str() ;
+			uint32_t len = 0 ;
+			uint8_t* pData = NULL ;
+			pData = link->encode(pm, len) ;
+			if(link->clientSend(pData, len)) {
+				link->clientRevc([](struct proto_msg pm){
+					std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
+					printf("%s\n",back_str.c_str()) ;
+					return true ;
+				}) ;
+			}
 		}
-		
 	}
 	return true ;
 }
@@ -100,9 +103,9 @@ int ComProgram::main(int argc, char **argv) {
 	
 	
 	if (!interactive()) {
-		return 1 ;
+		link->linkClose() ;
+		return 0 ;
 	}
-//	getchar() ;
 	return 0 ;
 }
 
@@ -110,7 +113,6 @@ bool ComProgram::certify(LineLink* lk) {
 	/*
 	 *	转移用户信息
 	 */
-	
 	struct user_config uc ; // struct.h
 	struct proto_msg pm ; // link.hpp
 	
