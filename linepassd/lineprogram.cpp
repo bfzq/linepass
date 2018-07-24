@@ -78,7 +78,7 @@ void LineProgram::initParameter(int argc, char **argv) {
 
 
 void LineProgram::commandWork(int client_socket,int8_t *cmd) {
-	printf("%s\n",cmd) ;
+//	printf("%s\n",cmd) ;
 	std::string cmd_s((char*)cmd) ;
 	/*
 	 * 返回客户信息
