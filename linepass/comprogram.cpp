@@ -52,8 +52,6 @@ bool ComProgram::connectServer() {
 bool ComProgram::interactive() {
 	struct proto_msg pm ;
 	while (cmd->input()) {
-//		pm.data = (int8_t*)malloc(strlen(cmd->cmd())*sizeof(int8_t)) ;
-//		memcpy(pm.data, cmd->cmd(), strlen(cmd->cmd())) ;
 		std::string cmd_str = ECB_AESEncryptStr(aesKey, cmd->cmd(), strlen(cmd->cmd())) ;
 		pm.server = COMMAND ;
 		pm.len = cmd_str.size() ;
