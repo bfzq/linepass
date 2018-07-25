@@ -8,7 +8,7 @@ show xxx
 put
 
 ```
-./linepass --connect-port=8088 --connect-host=127.0.0.1 --connect-user=admin --connect-password=admin
+./linepass --line-port=8088 --line-host=127.0.0.1 --line-user=admin --line-passwd=admin
 ```
 
 ```

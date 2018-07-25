@@ -20,10 +20,10 @@
 #include "secret.h"
 
 
-#define CONNECTPORT "connect-port"
-#define CONNECTHOST "connect-host"
-#define CONNECTUSER "connect-user"
-#define CONNECTPASSWORD "connect-password"
+#define CONNECTPORT "line-port"
+#define CONNECTHOST "line-host"
+#define CONNECTUSER "line-user"
+#define CONNECTPASSWORD "line-passwd"
 //#define <#macro#>
 
 extern const unsigned char* LINETESTKEY ;
