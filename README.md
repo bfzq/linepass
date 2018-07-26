@@ -3,10 +3,16 @@
 
 ## 客户端
 语法列表:
+
 show all 
+
 show xxx 
+
 put
 
+exit 退出客户端
+
+### 启动命令
 ```
 ./linepass --line-port=8088 --line-host=127.0.0.1 --line-user=admin --line-passwd=admin
 ```
