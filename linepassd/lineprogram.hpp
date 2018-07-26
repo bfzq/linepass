@@ -60,7 +60,7 @@ private:
 //	bool certify(int) ;
 	bool certify(int8_t*) ;
 	
-	void hideArg(int argc, char** argv, const char* arg) ;
+//	void hideArg(int argc, char** argv, const char* arg) ;
 private:
 	void commandWork(int client_socket, int8_t* cmd) ;
 };

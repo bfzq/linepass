@@ -45,3 +45,13 @@ void ComLine::printHelpInfo() {
 	std::cout << "--mysql-passwd	" << std::endl ;
 	std::cout << "    --mysql-db	" << std::endl ;
 }
+
+
+unsigned int ComLine::findParamIndex(int argc, char**argv, std::string param) {
+	for (int i = 1; i < argc; i++) {
+                std::string t = std::string(argv[i]);
+                int idx = t.find('=', 1);
+                std::string key = t.substr(2, idx - MOVESPACE * 2);
+		if(key == param) return i ;
+        }
+}

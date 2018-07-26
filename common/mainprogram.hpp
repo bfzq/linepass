@@ -9,7 +9,7 @@
 #ifndef mainprogram_hpp
 #define mainprogram_hpp
 #include "comline.hpp"
-
+#include <string.h>
 class MainProgram {
 protected:
 	ComLine* cl ;
@@ -19,6 +19,7 @@ public:
 public:
 	virtual int main(int argc, char* argv[]);
 	virtual int main();
+	void hideArg(int argc, char **argv, const char *arg);
 };
 
 #endif /* mainprogram_hpp */

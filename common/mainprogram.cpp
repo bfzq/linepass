@@ -8,6 +8,17 @@
 
 #include "mainprogram.hpp"
 
+void MainProgram::hideArg(int argc, char **argv, const char *arg) {
+//        for (int i = 1; i < argc; i++) {
+//                if (0 == strcmp(argv[i], arg)) {
+//                	memset(argv[i], 'x', strlen(argv[i]));
+//			break ;
+//		}
+//        }
+	unsigned int idx = cl->findParamIndex(argc,argv,std::string(arg)) ;
+	memset(argv[idx], 'x', strlen(argv[idx]));
+}
+
 
 MainProgram::MainProgram() {
 	cl = new ComLine() ;

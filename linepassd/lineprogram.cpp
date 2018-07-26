@@ -39,7 +39,7 @@ int LineProgram::main(int argc, char **argv) {
 //	intoDameon() ; // xcode 编辑期间关闭
 	getServerPara() ;
 	initMysqlPool() ;
-//	hideArg(argc,argv,"--mysql-passwd=root") ; // 隐藏密码
+	hideArg(argc,argv,"mysql-passwd") ; // 隐藏密码
 	tasks() ;
 	return 0 ;
 }
@@ -56,19 +56,6 @@ void LineProgram::initMysqlPool() {
 void LineProgram::getServerPara() {
 	sc.init(cl->map) ;
 	mc.init(cl->map) ;
-}
-
-void LineProgram::hideArg(int argc, char **argv, const char *arg) {
-	for (int i = 1; i < argc; i++) {
-		
-		if (0 == strcmp(argv[i], arg)) {
-			for (int j = i + 1; j < argc; j++) {
-				argv[i] = argv[j] ;
-			}
-			argv[argc - 1] = "" ;
-			break ;
-		}
-	}
 }
 
 

@@ -82,7 +82,7 @@ int ComProgram::main(int argc, char **argv) {
 	
 	cl->getKeyValue(argc, argv) ;
 	cc.init(cl->map) ;
-
+	hideArg(argc,argv,"line-passwd") ; // 隐藏密码
 	
 	/*
 	 * 连接服务器，失败退出
