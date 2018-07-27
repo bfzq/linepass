@@ -15,7 +15,7 @@ protected:
 	ComLine* cl ;
 public:
 	MainProgram() ;
-	~MainProgram() ;
+	virtual ~MainProgram() ;
 public:
 	virtual int main(int argc, char* argv[]);
 	virtual int main();
