@@ -15,8 +15,8 @@ void MainProgram::hideArg(int argc, char **argv, const char *arg) {
 //			break ;
 //		}
 //        }
-	unsigned int idx = cl->findParamIndex(argc,argv,std::string(arg)) ;
-	memset(argv[idx], 'x', strlen(argv[idx]));
+	int idx = cl->findParamIndex(argc,argv,std::string(arg)) ;
+	if(idx >= 0) memset(argv[idx], 'x', strlen(argv[idx]));
 }
 
 

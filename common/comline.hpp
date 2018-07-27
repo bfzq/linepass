@@ -15,7 +15,7 @@ public:
 	std::map<std::string, std::string>* getKeyValue(int argc,  char* argv[]);
 	bool haveHelp() ;
 	void printHelpInfo() ;
-	unsigned int findParamIndex(int argc, char** argv, std::string param) ; 
+	int findParamIndex(int argc, char** argv, std::string param) ; 
 };
 
 #endif // !__COMLINE__
