@@ -109,7 +109,7 @@ void LineProgram::tasks() {
 				 *	解密数据包
 				 */
 				int8_t* unsafeData = (int8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
-				
+				free(data) ;	
 				
 				switch (ph.server) {
 					// 登录验证
