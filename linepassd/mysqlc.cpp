@@ -27,6 +27,14 @@ void MySQLC::disConnect() {
 }
 
 
+bool MySQLC::query(std::string sql) {
+	if (!mysql_query(&mysql, sql.c_str())) {
+		return true ;
+	}
+	return false ;
+}
+
+
 bool MySQLC::query(std::string sql, std::function<bool(MYSQL_ROW)> f, std::function<void(void)> empty) {
 	if (!mysql_query(&mysql, sql.c_str())) {
 		if (nullptr != (res = mysql_store_result(&mysql))) {
