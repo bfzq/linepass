@@ -11,16 +11,22 @@
 
 #include <iostream>
 #include <string.h>
+//#include <stdio.h>
+#include "struct.h"
+#include <functional>
+
 
 
 
 class Command {
 private:
 	char cmm[256] ;
+	struct command com ;
 private:
 	bool morphology() ;
 public:
 	bool input() ;
-	char* cmd() ;
+//	char* cmd() ;
+	struct command cmd() ;
 };
 #endif /* command_hpp */
