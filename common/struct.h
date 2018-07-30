@@ -17,6 +17,7 @@
 //#define COMMAND 1
 
 struct user_config {
+	int user_id ;
 	char user_user[256];
 	char user_password[256];
 };

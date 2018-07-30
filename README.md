@@ -4,11 +4,13 @@
 ## 客户端
 语法列表:
 
-show all 
+show {all | title:xxx} 
 
 show xxx 
 
-put
+put [title | company | account | passwd]
+
+search
 
 exit 退出客户端
 

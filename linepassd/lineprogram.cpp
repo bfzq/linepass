@@ -64,12 +64,78 @@ void LineProgram::initParameter(int argc, char **argv) {
 }
 
 
-void LineProgram::commandWork(int client_socket,int8_t *cmd) {
+bool LineProgram::certify(struct user_config* uc, int8_t* buf) {
+//	struct user_config uc;
+	bool retVal = false;
+	memcpy(uc, buf, sizeof(user_config)) ;
+	//	printf("user:%s,password:%s\n",uc.user_user,uc.user_password) ;
+	MySQLC* local_mysql = mp->getMysqlCon() ;
+	std::string sql = "select id,password from users where username='" + std::string((*uc).user_user) + "' limit 1" ;
+	local_mysql->query(sql, [&retVal,&uc](MYSQL_ROW row) {
+		if (strcmp((*uc).user_password, ECB_AESDecryptStr(aesDbKey,row[1]).c_str()) == 0) {
+			(*uc).user_id = atoi(row[0]) ;
+			retVal = true ;
+		}else {
+			retVal = false ;
+		}
+		return true ;
+	}, [&retVal]() {
+		retVal = false ;
+	}) ;
+	mp->backMysqlCon(local_mysql) ;
+	local_mysql = nullptr ;
+	////	retVal = true ;
+	return retVal ;
+}
+
+
+void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *cmd) {
 	struct command comma;
 	memcpy(&comma, cmd, sizeof(comma)) ;
 	switch (comma.type) {
 		case type::put:
-			MySQLC* local_mysql = mp->getMysqlCon() ;
+			try {
+				MySQLC* local_mysql = mp->getMysqlCon() ;
+				local_mysql->begin() ;
+				std::string sql_company = "insert into company(ps_name) value(' "
+				+ std::string(comma.ai.company)
+				+ " ')" ;
+				local_mysql->query(sql_company) ;
+				
+				std::string sql_account = "insert into accounts(user_id,company_id,account,passwd) value("
+				+ std::to_string((*uc).user_id) + " , last_insert_id(),' " + std::string(comma.ai.account)
+				+ "' , '"
+				+ ECB_AESEncryptStr(aesDbKey, comma.ai.passwd, strlen(comma.ai.passwd))
+				+ "')";
+				
+				local_mysql->query(sql_account) ;
+				local_mysql->commit() ;
+				
+				/*
+				 * 返回客户信息
+				 */
+				struct proto_msg pm ;
+				pm.server = COMMAND ;
+				std::string backinfo = "PUT IS SUCCESS" ;
+				// 返回报文加密
+				std::string sedata = ECB_AESEncryptStr(aesKey, backinfo.c_str(), backinfo.size()) ;
+				pm.data = (int8_t*)sedata.c_str() ;
+				pm.len = sedata.size() ;
+				uint32_t len ; // 网络报文长度
+				
+				uint8_t* pdata = link->encode(pm, len) ;
+				send(client_socket, pdata, len, 0) ;
+				
+				mp->backMysqlCon(local_mysql) ;
+				local_mysql = nullptr ;
+				
+			} catch (MySQLC* local_mysql) {
+				local_mysql->rollback() ;
+				mp->backMysqlCon(local_mysql) ;
+				local_mysql = nullptr ;
+			}
+			
+			
 			
 //			std::string sql = "insert into "
 			break;
@@ -100,6 +166,7 @@ void LineProgram::tasks() {
 	link->init() ;
 	link->serverListen() ;
 	link->serverAccpet([&](int client_socket) {
+		struct user_config uc ;
 		/*
 		 * 交互
 		 */
@@ -132,7 +199,7 @@ void LineProgram::tasks() {
 						// 记录返回报文
 						std::string backtext ;
 						// 验证数据包
-						if(certify(unsafeData)) {
+						if(certify(&uc, unsafeData)) {
 							// 验证成功，返回ok
 							backtext = CALLBACKOK ;
 						}else {
@@ -156,7 +223,7 @@ void LineProgram::tasks() {
 						break;
 					}
 					case COMMAND:
-						commandWork(client_socket,unsafeData) ;
+						commandWork(&uc,client_socket,unsafeData) ;
 						break ;
 					default:
 						break;
@@ -170,28 +237,6 @@ void LineProgram::tasks() {
 	}) ;
 }
 
-bool LineProgram::certify(int8_t* buf) {
-	struct user_config uc;
-	bool retVal = false;
-	memcpy(&uc, buf, sizeof(user_config)) ;
-//	printf("user:%s,password:%s\n",uc.user_user,uc.user_password) ;
-	MySQLC* local_mysql = mp->getMysqlCon() ;
-	std::string sql = "select password from users where username='" + std::string(uc.user_user) + "'" ;
-	local_mysql->query(sql, [&retVal,&uc](MYSQL_ROW row) {
-		if (strcmp(uc.user_password, ECB_AESDecryptStr(aesDbKey,row[0]).c_str()) == 0) {
-			retVal = true ;
-		}else {
-			retVal = false ;
-		}
-		return true ;
-	}, [&retVal]() {
-		retVal = false ;
-	}) ;
-	mp->backMysqlCon(local_mysql) ;
-	local_mysql = nullptr ;
-////	retVal = true ;
-	return retVal ;
-}
 
 int LineProgram::main() {
 	//	intoDameon() ; // xcode 编辑期间关闭

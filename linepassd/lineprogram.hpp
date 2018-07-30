@@ -19,6 +19,7 @@
 #include "secret.h"
 #include "const.h"
 #include "linedata.hpp"
+#include <stdlib.h>
 
 #define LISTENPORT "listen-port"
 #define POOLNUM "pool-num"
@@ -58,11 +59,11 @@ private:
 	void initParameter(int argc, char* argv[]) ;
 	void getServerPara() ;
 //	bool certify(int) ;
-	bool certify(int8_t*) ;
+	bool certify(struct user_config*, int8_t*) ;
 	
 //	void hideArg(int argc, char** argv, const char* arg) ;
 private:
-	void commandWork(int client_socket, int8_t* cmd) ;
+	void commandWork(struct user_config* uc, int client_socket, int8_t* cmd) ;
 };
 
 #endif /* lineprogram_hpp */
