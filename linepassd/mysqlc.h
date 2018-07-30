@@ -25,6 +25,11 @@ public:
 	bool query(std::string sql, std::function<bool(MYSQL_ROW)> f, std::function<void(void)> empty);
 	std::vector<std::string> getValue(std::string column);
 	bool query(std::string sql) ;
+public:
+	bool begin() ;
+	bool commit() ;
+	bool rollback() ;
+	const char* error() ;
 };
 
 #endif // !__MYSQLC__

@@ -19,6 +19,10 @@ bool MySQLC::connect(std::string host, std::string user, std::string password, s
         std::cout << mysql_error(&mysql) << std::endl ;
 		return false;
 	}
+	if (mysql_set_character_set(&mysql, "utf8mb4")) {
+		disConnect() ;
+		return false ;
+	}
 	return true;
 }
 
@@ -31,7 +35,23 @@ bool MySQLC::query(std::string sql) {
 	if (!mysql_query(&mysql, sql.c_str())) {
 		return true ;
 	}
-	return false ;
+	throw this ;
+}
+
+bool MySQLC::begin() {
+	return query("begin") ;
+}
+
+bool MySQLC::commit() {
+	return query("commit") ;
+}
+
+bool MySQLC::rollback() {
+	return query("rollback") ;
+}
+
+const char* MySQLC::error() {
+	return mysql_error(&mysql) ;
 }
 
 
