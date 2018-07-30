@@ -23,7 +23,7 @@ ComProgram::ComProgram() {
 	link = new LineLink(LineLink::CLIENT) ;
 	cmd = new Command() ;
 	ls = new LineSecret() ;
-//	lc = new ComLine() ;
+	//	lc = new ComLine() ;
 }
 
 ComProgram::~ComProgram() {
@@ -52,16 +52,24 @@ bool ComProgram::connectServer() {
 bool ComProgram::interactive() {
 	struct proto_msg pm ;
 	while (cmd->input()) {
-		if (!strcmp(cmd->cmd(), "exit")) {
+		if (cmd->cmd().type == type::quit) {
 			return false ;
 		} else {
-			std::string cmd_str = ECB_AESEncryptStr(aesKey, cmd->cmd(), strlen(cmd->cmd())) ;
+			struct command cd = cmd->cmd() ;
+			char* tmp_c = (char*)malloc(sizeof(cd)) ;
+			memcpy(tmp_c, (char*)&cd, sizeof(cd)) ;
+			// 加密
+			std::string cmd_str = ECB_AESEncryptStr(aesKey, tmp_c, sizeof(cd)) ;
+			
+			
 			pm.server = COMMAND ;
 			pm.len = cmd_str.size() ;
 			pm.data = (int8_t*)cmd_str.c_str() ;
+			
 			uint32_t len = 0 ;
 			uint8_t* pData = NULL ;
 			pData = link->encode(pm, len) ;
+			
 			if(link->clientSend(pData, len)) {
 				link->clientRevc([](struct proto_msg pm){
 					std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
@@ -69,6 +77,18 @@ bool ComProgram::interactive() {
 					return true ;
 				}) ;
 			}
+			
+			
+			
+			
+			//			std::string cmd_str = ECB_AESEncryptStr(aesKey, cmd->cmd(), strlen(cmd->cmd())) ;
+			//			pm.server = COMMAND ;
+			//			pm.len = cmd_str.size() ;
+			//			pm.data = (int8_t*)cmd_str.c_str() ;
+			//			uint32_t len = 0 ;
+			//			uint8_t* pData = NULL ;
+			//			pData = link->encode(pm, len) ;
+			
 		}
 	}
 	return true ;
@@ -116,25 +136,25 @@ bool ComProgram::certify(LineLink* lk) {
 	struct user_config uc ; // struct.h
 	struct proto_msg pm ; // link.hpp
 	
-//	uc.user_user = cc.connect_user ;
-//	uc.user_password = cc.connect_password ;
+	//	uc.user_user = cc.connect_user ;
+	//	uc.user_password = cc.connect_password ;
 	
 	// 把用户信息复制到uc
 	strcpy(uc.user_user, cc.connect_user.c_str()) ;
 	strcpy(uc.user_password, cc.connect_password.c_str()) ;
-
+	
 	size_t size = sizeof(uc) ;
 	char* plain = (char*)malloc(sizeof(char) * size) ;
 	memcpy(plain,(char*)&uc,size) ;
 	
-   	std::string data = ECB_AESEncryptStr(aesKey,plain,size) ;
+	std::string data = ECB_AESEncryptStr(aesKey,plain,size) ;
 	pm.data = (int8_t*)data.c_str() ;
 	pm.len = data.size();
 	pm.server = LOGIN ;
 	uint32_t package_size;
 	uint8_t* pdata = link->encode(pm, package_size) ;
 	
-//	printf("发送密文:%s,长度:%d",pm.data,pm.len) ;
+	//	printf("发送密文:%s,长度:%d",pm.data,pm.len) ;
 	
 	/*
 	 *	发送登录验证信息
@@ -149,7 +169,7 @@ bool ComProgram::certify(LineLink* lk) {
 	return lk->clientRevc([&](struct proto_msg pm) {
 		try {
 			const char* tmp_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data).c_str() ;
-//			printf("接收密文:%s,长度:%d,解密:%s",pm.data,pm.len,tmp_str) ;
+			//			printf("接收密文:%s,长度:%d,解密:%s",pm.data,pm.len,tmp_str) ;
 			if (!strcmp(tmp_str, CALLBACKOK)) {
 				return true ;
 			}else {

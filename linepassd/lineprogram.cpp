@@ -65,21 +65,33 @@ void LineProgram::initParameter(int argc, char **argv) {
 
 
 void LineProgram::commandWork(int client_socket,int8_t *cmd) {
-//	printf("%s\n",cmd) ;
-	std::string cmd_s((char*)cmd) ;
-	/*
-	 * 返回客户信息
-	 */
-	struct proto_msg pm ;
-	pm.server = COMMAND ;
-	// 返回报文加密
-	std::string sedata = ECB_AESEncryptStr(aesKey, cmd_s.c_str(), cmd_s.size()) ;
-	pm.data = (int8_t*)sedata.c_str() ;
-	pm.len = sedata.size() ;
-	uint32_t len ; // 网络报文长度
+	struct command comma;
+	memcpy(&comma, cmd, sizeof(comma)) ;
+	switch (comma.type) {
+		case type::put:
+			MySQLC* local_mysql = mp->getMysqlCon() ;
+			
+//			std::string sql = "insert into "
+			break;
+			
+		default:
+			break;
+	}
 	
-	uint8_t* pdata = link->encode(pm, len) ;
-	send(client_socket, pdata, len, 0) ;
+//	std::string cmd_s((char*)cmd) ;
+//	/*
+//	 * 返回客户信息
+//	 */
+//	struct proto_msg pm ;
+//	pm.server = COMMAND ;
+//	// 返回报文加密
+//	std::string sedata = ECB_AESEncryptStr(aesKey, cmd_s.c_str(), cmd_s.size()) ;
+//	pm.data = (int8_t*)sedata.c_str() ;
+//	pm.len = sedata.size() ;
+//	uint32_t len ; // 网络报文长度
+//
+//	uint8_t* pdata = link->encode(pm, len) ;
+//	send(client_socket, pdata, len, 0) ;
 }
 
 
