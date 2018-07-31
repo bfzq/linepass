@@ -52,7 +52,7 @@ bool ComProgram::connectServer() {
 bool ComProgram::interactive() {
 	struct proto_msg pm ;
 	while (cmd->input()) {
-		if (cmd->cmd().type == type::quit) {
+		if (cmd->cmd().local_type == type::quit) {
 			return false ;
 		} else {
 			struct command cd = cmd->cmd() ;

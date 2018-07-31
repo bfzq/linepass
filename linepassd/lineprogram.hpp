@@ -18,7 +18,7 @@
 #include "mysqlcpool.hpp"
 #include "secret.h"
 #include "const.h"
-#include "linedata.hpp"
+//#include "linedata.hpp"
 #include <stdlib.h>
 
 #define LISTENPORT "listen-port"

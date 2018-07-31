@@ -42,8 +42,8 @@ const char subtype_s[5][9] = {"all","title","company","account","nickname"} ;
  *	del no:1
  */
 struct command {
-	type type; // 0 show, 1 put , 2 search
-	subtype sutype;
+	enum type local_type; // 0 show, 1 put , 2 search
+	enum subtype local_sutype;
 	char content[256] ; //a content what used by 'show' or 'search'
 	struct accountinfo ai ; // used by put
 	
@@ -51,11 +51,11 @@ struct command {
 		ushort i ;
 		for(i = 0; i < 5; i++) {
 			if(0 == strcmp(type_s[i], ty)) {
-				type = (enum type)i;
+				local_type = (enum type)i;
 				break ;
 			}
 		}
-		if (i == 5) type = type::ty_zero;
+		if (i == 5) local_type = type::ty_zero;
 	}
 	
 	
@@ -73,11 +73,11 @@ struct command {
 		ushort i ;
 		for(i = 0; i < 5; i++) {
 			if(0 == strcmp(subtype_s[i], ty)) {
-				sutype = (enum subtype)i;
+				local_sutype = (enum subtype)i;
 				break ;
 			}
 		}
-		if (i == 5) sutype = subtype::sub_zero;
+		if (i == 5) local_sutype = subtype::sub_zero;
 	}
 };
 

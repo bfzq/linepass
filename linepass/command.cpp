@@ -17,10 +17,10 @@ bool Command::morphology() {
 	char* word ;
 	char* cmm_s = cmm;
 //	memcpy(cmm_s, cmm, strlen(cmm)) ;
-	com.type = type::ty_zero ;
+	com.local_type = type::ty_zero ;
 	if (NULL != (word = strsep(&cmm_s, " "))) {
 		com.gettype(word) ;
-		switch (com.type) {
+		switch (com.local_type) {
 			case type::put: {
 				while (NULL != (word = strsep(&cmm_s, " "))) {
 					char* accountkey ;

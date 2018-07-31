@@ -92,7 +92,7 @@ bool LineProgram::certify(struct user_config* uc, int8_t* buf) {
 void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *cmd) {
 	struct command comma;
 	memcpy(&comma, cmd, sizeof(comma)) ;
-	switch (comma.type) {
+	switch (comma.local_type) {
 		case type::put:
 			try {
 				MySQLC* local_mysql = mp->getMysqlCon() ;
@@ -144,20 +144,6 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 			break;
 	}
 	
-//	std::string cmd_s((char*)cmd) ;
-//	/*
-//	 * 返回客户信息
-//	 */
-//	struct proto_msg pm ;
-//	pm.server = COMMAND ;
-//	// 返回报文加密
-//	std::string sedata = ECB_AESEncryptStr(aesKey, cmd_s.c_str(), cmd_s.size()) ;
-//	pm.data = (int8_t*)sedata.c_str() ;
-//	pm.len = sedata.size() ;
-//	uint32_t len ; // 网络报文长度
-//
-//	uint8_t* pdata = link->encode(pm, len) ;
-//	send(client_socket, pdata, len, 0) ;
 }
 
 
