@@ -30,7 +30,7 @@ const uint8_t PROTO_MAGIC = 'L';
 const uint32_t PROTO_HEAD_SIZE = 8 ;
 const uint8_t PROTO_VERSION = '1' ;
 
-enum Server: uint16_t {LOGIN, COMMAND};
+enum Server: uint16_t {LOGIN, COMMAND, MESSAGE};
 
 /*
  *	总长 8 byte
@@ -45,7 +45,7 @@ struct proto_head {
 
 struct proto_msg {
 	uint32_t len ; // 结构体长度
-	uint16_t server ; // 标识服务 2 byte 1:字符串
+	Server server ; // 标识服务 2 byte 1:字符串
 	int8_t* data ; //
 };
 

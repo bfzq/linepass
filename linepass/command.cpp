@@ -21,6 +21,7 @@ bool Command::morphology() {
 	if (NULL != (word = strsep(&cmm_s, " "))) {
 		com.gettype(word) ;
 		switch (com.local_type) {
+			case type::show:
 			case type::put: {
 				while (NULL != (word = strsep(&cmm_s, " "))) {
 					char* accountkey ;
@@ -42,12 +43,6 @@ bool Command::morphology() {
 			}
 			case type::quit: {
 				return true ;
-			}
-			case type::show: {
-				char* subkey ;
-				if (NULL != (subkey = strsep(&cmm_s, ":"))) {
-					
-				}
 			}
 			default:
 				return false ;

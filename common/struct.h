@@ -22,11 +22,11 @@ struct user_config {
 	char user_password[256];
 };
 struct accountinfo {
-	char title[64] ;
-	char company[128] ;
-	char account[256] ;
-	char passwd[256] ;
-	char nickname[64] ;
+	char title[64] = {'\0'};
+	char company[128]  = {'\0'};
+	char account[256]  = {'\0'};
+	char passwd[256]  = {'\0'};
+	char nickname[64]  = {'\0'};
 };
 
 

@@ -135,7 +135,7 @@ bool LineLink::clientRevc(std::function<bool (struct proto_msg)> revc) {
 					data[datalen] = '\0' ;
 					if (len == ph.len - PROTO_HEAD_SIZE) {
 						struct proto_msg pm ;
-						pm.server = LOGIN ;
+						pm.server = ph.server ;
 						pm.len = len ;
 						pm.data = data ;
 						return revc(pm) ;

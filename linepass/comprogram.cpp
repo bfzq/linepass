@@ -72,8 +72,13 @@ bool ComProgram::interactive() {
 			
 			if(link->clientSend(pData, len)) {
 				link->clientRevc([](struct proto_msg pm){
-					std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
-					printf("%s\n",back_str.c_str()) ;
+					switch(pm.server) {
+						case Server::MESSAGE:
+							std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
+							printf("%s\n",back_str.c_str()) ;
+						default:
+						break;
+					}
 					return true ;
 				}) ;
 			}

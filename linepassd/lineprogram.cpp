@@ -102,10 +102,16 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 				+ " ')" ;
 				local_mysql->query(sql_company) ;
 				
-				std::string sql_account = "insert into accounts(user_id,company_id,account,passwd) value("
-				+ std::to_string((*uc).user_id) + " , last_insert_id(),' " + std::string(comma.ai.account)
+				std::string sql_account = "insert into accounts(user_id,company_id,title,account,passwd,nickname) value("
+				+ std::to_string((*uc).user_id) 
+				+ " , last_insert_id(),' " 
+				+ std::string(comma.ai.title)
+				+ "' , '"
+				+ std::string(comma.ai.account)
 				+ "' , '"
 				+ ECB_AESEncryptStr(aesDbKey, comma.ai.passwd, strlen(comma.ai.passwd))
+				+ "' , '"
+				+ std::string(comma.ai.nickname)
 				+ "')";
 				
 				local_mysql->query(sql_account) ;
@@ -114,8 +120,9 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 				/*
 				 * 返回客户信息
 				 */
+				 
 				struct proto_msg pm ;
-				pm.server = COMMAND ;
+				pm.server = MESSAGE ;
 				std::string backinfo = "PUT IS SUCCESS" ;
 				// 返回报文加密
 				std::string sedata = ECB_AESEncryptStr(aesKey, backinfo.c_str(), backinfo.size()) ;
@@ -138,7 +145,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 				 * 返回客户信息
 				 */
 				struct proto_msg pm ;
-				pm.server = COMMAND ;
+				pm.server = MESSAGE ;
 				std::string backinfo = "PUT IS ERROR" ;
 				// 返回报文加密
 				std::string sedata = ECB_AESEncryptStr(aesKey, backinfo.c_str(), backinfo.size()) ;
@@ -156,7 +163,48 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 			
 //			std::string sql = "insert into "
 			break;
-			
+		case type::show:
+			try {
+				MySQLC* local_mysql = mp->getMysqlCon() ;
+				local_mysql->begin() ;
+				std::string sql = "select a.title,a.account,a.passwd,a.nickname,c.ps_name as company from accounts as a left join company as c on a.company_id=c.id where user_id = "
+					+ std::to_string((*uc).user_id);
+				if ( 0 != strlen(comma.ai.title) ) {
+					sql = sql + " and a.title like '%" + std::string(comma.ai.title) + "%' " ;
+				}
+				if ( 0 != strlen(comma.ai.account) ) {
+					sql = sql + " and a.account like '%" + std::string(comma.ai.account) + "%' " ;
+				}
+				if ( 0 != strlen(comma.ai.nickname) ) {
+					sql = sql + " and a.nickname like '%" + std::string(comma.ai.nickname) + "%' " ;
+				}
+				if ( 0 != strlen(comma.ai.company) ) {
+					sql = sql + " and c.ps_name like '%" + std::string(comma.ai.company) + "%' " ;
+				}
+				sql = sql + ";" ;
+				
+				
+			} catch(MySQLC* local_mysql) {
+				local_mysql->rollback() ;
+				mp->backMysqlCon(local_mysql) ;
+				local_mysql = nullptr ;
+				
+				/*
+				 * 返回客户信息
+				 */
+				struct proto_msg pm ;
+				pm.server = MESSAGE ;
+				std::string backinfo = "SHOW IS ERROR" ;
+				// 返回报文加密
+				std::string sedata = ECB_AESEncryptStr(aesKey, backinfo.c_str(), backinfo.size()) ;
+				pm.data = (int8_t*)sedata.c_str() ;
+				pm.len = sedata.size() ;
+				uint32_t len ; // 网络报文长度
+				
+				uint8_t* pdata = link->encode(pm, len) ;
+				send(client_socket, pdata, len, 0) ;
+			}
+			break;
 		default:
 			break;
 	}
