@@ -133,6 +133,23 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 				local_mysql->rollback() ;
 				mp->backMysqlCon(local_mysql) ;
 				local_mysql = nullptr ;
+				
+				/*
+				 * 返回客户信息
+				 */
+				struct proto_msg pm ;
+				pm.server = COMMAND ;
+				std::string backinfo = "PUT IS ERROR" ;
+				// 返回报文加密
+				std::string sedata = ECB_AESEncryptStr(aesKey, backinfo.c_str(), backinfo.size()) ;
+				pm.data = (int8_t*)sedata.c_str() ;
+				pm.len = sedata.size() ;
+				uint32_t len ; // 网络报文长度
+				
+				uint8_t* pdata = link->encode(pm, len) ;
+				send(client_socket, pdata, len, 0) ;
+				
+				
 			}
 			
 			
