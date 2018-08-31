@@ -34,7 +34,7 @@ LineLink::LineLink(JOB job) {
 
 void LineLink::listenOrConnectPort(in_port_t port) {
 	server_addr.sin_port = htons(port) ;
-//	server_addr.sin_addr
+	//	server_addr.sin_addr
 }
 
 void LineLink::listenPort(in_port_t port) {
@@ -120,30 +120,30 @@ bool LineLink::clientConnect() {
 }
 
 
-bool LineLink::clientRevc(std::function<bool (struct proto_msg)> revc) {
-		uint32_t len ;
-		uint8_t buf[PROTO_HEAD_SIZE];
-		if((len=recv(local_socket,buf,PROTO_HEAD_SIZE,0)) > 0) { //接收服务器端信息
-			struct proto_head ph ;
-			if (!parser(buf, len, &ph)) {
-				return false ;
-			}
-			if (ph.len > PROTO_HEAD_SIZE) {
-				uint32_t datalen = ph.len - PROTO_HEAD_SIZE ;
-				int8_t* data = (int8_t*)malloc(sizeof(int8_t) * (datalen + 1)) ;
-				if ((len = recv(local_socket, data, datalen, 0)) > 0) {
-					data[datalen] = '\0' ;
-					if (len == ph.len - PROTO_HEAD_SIZE) {
-						struct proto_msg pm ;
-						pm.server = ph.server ;
-						pm.len = len ;
-						pm.data = data ;
-						return revc(pm) ;
-					}
+bool LineLink::clientRevc(std::function<void (struct proto_msg)> revc) {
+	uint32_t len ;
+	uint8_t buf[PROTO_HEAD_SIZE];
+	if((len=recv(local_socket,buf,PROTO_HEAD_SIZE,0))) { //接收服务器端信息
+		struct proto_head ph ;
+		if (!parser(buf, len, &ph)) {
+			return false ;
+		}
+		if (ph.len > PROTO_HEAD_SIZE) {
+			uint32_t datalen = ph.len - PROTO_HEAD_SIZE ;
+			int8_t* data = (int8_t*)malloc(sizeof(int8_t) * (datalen + 1)) ;
+			if ((len = recv(local_socket, data, datalen, 0)) > 0) {
+				data[datalen] = '\0' ;
+				if (len == ph.len - PROTO_HEAD_SIZE) {
+					struct proto_msg pm ;
+					pm.server = ph.server ;
+					pm.len = len ;
+					pm.data = data ;
+					revc(pm) ;
 				}
 			}
 		}
-		return false ;
+	}
+	return true ;
 }
 
 

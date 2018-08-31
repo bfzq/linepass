@@ -69,20 +69,40 @@ bool ComProgram::interactive() {
 			uint32_t len = 0 ;
 			uint8_t* pData = NULL ;
 			pData = link->encode(pm, len) ;
-			
+			if (cd.local_type == show) {
+				printf("err") ;
+			}
+			printf("%d : %s",cd.local_type,pm.data) ;
 			if(link->clientSend(pData, len)) {
-				link->clientRevc([](struct proto_msg pm){
-					switch(pm.server) {
-						case Server::MESSAGE: {
-							std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
-							printf("%s\n",back_str.c_str()) ;
+				Server type ;
+				do {
+					
+					link->clientRevc([&type](struct proto_msg pm){
+						type = pm.server ;
+						switch(pm.server) {
+							case Server::MESSAGE: {
+								std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
+								printf("%s\n",back_str.c_str()) ;
+								break ;
+							}
+							case Server::RESULT: {
+								uint8_t* bdata = (uint8_t*)ECB_AESDecryptStr(aesKey, (const char*)pm.data).c_str() ;
+								struct command cmd ;
+								memcpy(&cmd, bdata, sizeof(command)) ;
+								printf("   title : %s\n", cmd.ai.title) ;
+								printf(" account : %s\n", cmd.ai.account) ;
+								printf("  passwd : %s\n", cmd.ai.passwd) ;
+								printf("nickname : %s\n", cmd.ai.nickname) ;
+								printf(" company : %s\n", cmd.ai.company) ;
+								break ;
+							}
+							default:{
+								break;
+							}
 						}
-						default:{
-						break;
-						}
-					}
-					return true ;
-				}) ;
+						return true ;
+					}) ;
+				} while(Server::RESULT == type) ;
 			}
 			
 			
@@ -173,21 +193,21 @@ bool ComProgram::certify(LineLink* lk) {
 	/*
 	 *	返回报文
 	 */
-	return lk->clientRevc([&](struct proto_msg pm) {
+	bool retVal = false ;
+	lk->clientRevc([&](struct proto_msg pm) {
 		try {
-			const char* tmp_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data).c_str() ;
-			//			printf("接收密文:%s,长度:%d,解密:%s",pm.data,pm.len,tmp_str) ;
-			if (!strcmp(tmp_str, CALLBACKOK)) {
-				return true ;
-			}else {
-				return false ;
+			if (LOGIN == pm.server) {
+				const char* tmp_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data).c_str() ;
+				//			printf("接收密文:%s,长度:%d,解密:%s",pm.data,pm.len,tmp_str) ;
+				if (!strcmp(tmp_str, CALLBACKOK)) {
+					retVal = true ;
+				}
 			}
 		} catch (Exception &e) {
 			printf("%s\n",e.what()) ;
-			return false ;
 		}
-		
 	}) ;
+	return retVal ;
 }
 
 int ComProgram::main() {

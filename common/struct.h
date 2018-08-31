@@ -30,7 +30,7 @@ struct accountinfo {
 };
 
 
-enum type : ushort {show = 0,put,del,search,quit,ty_zero} ;
+enum type : ushort {show = 0,put = 1,del = 2,search = 3,quit = 4,result = 5, ty_zero = 6} ;
 enum subtype : ushort {all = 0,tittle,company,account,nickname,sub_zero} ;
 const char type_s[5][7] = {"show","put","del","search","quit"} ;
 const char subtype_s[5][9] = {"all","title","company","account","nickname"} ;

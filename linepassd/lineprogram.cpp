@@ -104,7 +104,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 				
 				std::string sql_account = "insert into accounts(user_id,company_id,title,account,passwd,nickname) value("
 				+ std::to_string((*uc).user_id) 
-				+ " , last_insert_id(),' " 
+				+ " , last_insert_id(),'"
 				+ std::string(comma.ai.title)
 				+ "' , '"
 				+ std::string(comma.ai.account)
@@ -140,7 +140,6 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 				local_mysql->rollback() ;
 				mp->backMysqlCon(local_mysql) ;
 				local_mysql = nullptr ;
-				
 				/*
 				 * 返回客户信息
 				 */
@@ -166,7 +165,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 		case type::show:
 			try {
 				MySQLC* local_mysql = mp->getMysqlCon() ;
-				local_mysql->begin() ;
+//				local_mysql->begin() ;
 				std::string sql = "select a.title,a.account,a.passwd,a.nickname,c.ps_name as company from accounts as a left join company as c on a.company_id=c.id where user_id = "
 					+ std::to_string((*uc).user_id);
 				if ( 0 != strlen(comma.ai.title) ) {
@@ -183,9 +182,66 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 				}
 				sql = sql + ";" ;
 				
+				local_mysql->query(sql, [&](MYSQL_ROW row) {
+					struct command cmd ;
+					cmd.local_type = result ;
+					if(NULL != row[0]) memcpy(cmd.ai.title, row[0], strlen(row[0])) ;
+					if(NULL != row[1]) memcpy(cmd.ai.account, row[1], strlen(row[1])) ;
+					if(NULL != row[2]) memcpy(cmd.ai.passwd, ECB_AESDecryptStr(aesDbKey, row[2]).c_str(), ECB_AESDecryptStr(aesDbKey, row[2]).size()) ;
+					if(NULL != row[3]) memcpy(cmd.ai.nickname, row[3], strlen(row[3])) ;
+					if(NULL != row[4]) memcpy(cmd.ai.company, row[4], strlen(row[4])) ;
+					
+					char* tmp_c = (char*)malloc(sizeof(cmd)) ;
+					memcpy(tmp_c, (char*)&cmd, sizeof(cmd)) ;
+					std::string cmd_str = ECB_AESEncryptStr(aesKey, tmp_c, sizeof(cmd)) ;
+					
+					struct proto_msg pm ;
+					pm.server = RESULT ;
+					pm.len = cmd_str.size() ;
+					pm.data = (int8_t*)cmd_str.c_str() ;
+					
+					uint32_t len ;
+					uint8_t* pdata = link->encode(pm, len) ;
+					send(client_socket, pdata, len, 0) ;
+					
+					return true ;
+				}, [&]() {
+					/*
+					 * 返回客户信息
+					 */
+					struct proto_msg pm ;
+					pm.server = MESSAGE ;
+					std::string backinfo = "HAVE NO ACCOUNTS." ;
+					// 返回报文加密
+					std::string sedata = ECB_AESEncryptStr(aesKey, backinfo.c_str(), backinfo.size()) ;
+					pm.data = (int8_t*)sedata.c_str() ;
+					pm.len = sedata.size() ;
+					uint32_t len ; // 网络报文长度
+					
+					uint8_t* pdata = link->encode(pm, len) ;
+					send(client_socket, pdata, len, 0) ;
+				}) ;
+				/*
+				 * 返回客户信息
+				 */
+				struct proto_msg pm ;
+				pm.server = MESSAGE ;
+				std::string backinfo = "DONE" ;
+				// 返回报文加密
+				std::string sedata = ECB_AESEncryptStr(aesKey, backinfo.c_str(), backinfo.size()) ;
+				pm.data = (int8_t*)sedata.c_str() ;
+				pm.len = sedata.size() ;
+				uint32_t len ; // 网络报文长度
+				
+				uint8_t* pdata = link->encode(pm, len) ;
+				send(client_socket, pdata, len, 0) ;
+				
+				
+				mp->backMysqlCon(local_mysql) ;
+				local_mysql = nullptr ;
 				
 			} catch(MySQLC* local_mysql) {
-				local_mysql->rollback() ;
+//				local_mysql->rollback() ;
 				mp->backMysqlCon(local_mysql) ;
 				local_mysql = nullptr ;
 				
@@ -234,6 +290,7 @@ void LineProgram::tasks() {
 					continue ;
 				}
 				data[datalen] = '\0' ;
+				printf("== %s", data) ;
 				
 				/*
 				 *	解密数据包

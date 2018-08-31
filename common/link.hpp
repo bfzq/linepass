@@ -30,7 +30,7 @@ const uint8_t PROTO_MAGIC = 'L';
 const uint32_t PROTO_HEAD_SIZE = 8 ;
 const uint8_t PROTO_VERSION = '1' ;
 
-enum Server: uint16_t {LOGIN, COMMAND, MESSAGE};
+enum Server: uint16_t {LOGIN, COMMAND, MESSAGE, RESULT,DONE};
 
 /*
  *	总长 8 byte
@@ -77,7 +77,7 @@ public:
 	void clientPort(in_port_t) ;
 	bool clientConnect() ;
 	
-	bool clientRevc(std::function<bool(struct proto_msg)> revc);
+	bool clientRevc(std::function<void(struct proto_msg)> revc);
 	
 	
 	bool clientSend(uint8_t* buf,size_t size) ;
