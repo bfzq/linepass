@@ -27,6 +27,13 @@ struct accountinfo {
 	char account[256]  = {'\0'};
 	char passwd[256]  = {'\0'};
 	char nickname[64]  = {'\0'};
+	void empty() {
+		title[0] = '\0' ;
+		company[0] = '\0' ;
+		account[0] = '\0' ;
+		passwd[0] = '\0' ;
+		nickname[0] = '\0' ;
+	}
 };
 
 
@@ -46,7 +53,12 @@ struct command {
 	enum subtype local_sutype;
 	char content[256] ; //a content what used by 'show' or 'search'
 	struct accountinfo ai ; // used by put
-	
+	void empty() {
+		ai.empty() ;
+		local_type = type::ty_zero ;
+		content[0] = '\0' ;
+		local_sutype = subtype::all ;
+	}
 	void gettype(char* ty) {
 		ushort i ;
 		for(i = 0; i < 5; i++) {

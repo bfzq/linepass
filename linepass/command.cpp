@@ -17,7 +17,7 @@ bool Command::morphology() {
 	char* word ;
 	char* cmm_s = cmm;
 //	memcpy(cmm_s, cmm, strlen(cmm)) ;
-	com.local_type = type::ty_zero ;
+	com.empty() ;
 	if (NULL != (word = strsep(&cmm_s, " "))) {
 		com.gettype(word) ;
 		switch (com.local_type) {

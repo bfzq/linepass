@@ -211,7 +211,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 					 */
 					struct proto_msg pm ;
 					pm.server = MESSAGE ;
-					std::string backinfo = "HAVE NO ACCOUNTS." ;
+					std::string backinfo = "COMMAND SHOW HAVE NO ACCOUNTS." ;
 					// 返回报文加密
 					std::string sedata = ECB_AESEncryptStr(aesKey, backinfo.c_str(), backinfo.size()) ;
 					pm.data = (int8_t*)sedata.c_str() ;
@@ -226,7 +226,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *
 				 */
 				struct proto_msg pm ;
 				pm.server = MESSAGE ;
-				std::string backinfo = "DONE" ;
+				std::string backinfo = "COMMAND SHOW DONE" ;
 				// 返回报文加密
 				std::string sedata = ECB_AESEncryptStr(aesKey, backinfo.c_str(), backinfo.size()) ;
 				pm.data = (int8_t*)sedata.c_str() ;
@@ -290,7 +290,7 @@ void LineProgram::tasks() {
 					continue ;
 				}
 				data[datalen] = '\0' ;
-				printf("== %s", data) ;
+				// printf("== %s", data) ;
 				
 				/*
 				 *	解密数据包

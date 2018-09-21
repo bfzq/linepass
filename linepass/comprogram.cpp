@@ -69,10 +69,6 @@ bool ComProgram::interactive() {
 			uint32_t len = 0 ;
 			uint8_t* pData = NULL ;
 			pData = link->encode(pm, len) ;
-			if (cd.local_type == show) {
-				printf("err") ;
-			}
-			printf("%d : %s",cd.local_type,pm.data) ;
 			if(link->clientSend(pData, len)) {
 				Server type ;
 				do {
@@ -82,7 +78,7 @@ bool ComProgram::interactive() {
 						switch(pm.server) {
 							case Server::MESSAGE: {
 								std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
-								printf("%s\n",back_str.c_str()) ;
+								printf("message: %s\n",back_str.c_str()) ;
 								break ;
 							}
 							case Server::RESULT: {
