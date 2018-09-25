@@ -60,7 +60,7 @@ bool MySQLC::query(std::string sql, std::function<bool(MYSQL_ROW)> f, std::funct
 		if (nullptr != (res = mysql_store_result(&mysql))) {
 			bool retVal = true;
 			if (mysql_num_rows(res)) {
-				while ((row = mysql_fetch_row(res)) != NULL) {
+				while ((row = mysql_fetch_row(res)) != NULL && retVal) {
 					retVal = f(row);
 				}
 			}else {
