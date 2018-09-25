@@ -20,7 +20,8 @@ linepass --line-port=8088 --line-host=127.0.0.1 --line-user=admin --line-passwd=
 ```
 
 ```
-linepassd --listen-port=8088 --pool-num=8 --mysql-port=3306 --mysql-host=127.0.0.1 --mysql-user=root --mysql-passwd=root --mysql-db=linepass
+linepassd --listen-port=8088 --pool-num=8 --mysql-port=3306 --mysql-host=127.0.0.1 
+  --mysql-user=root --mysql-passwd=root --mysql-db=linepass
 ```
 
 ### 更新
