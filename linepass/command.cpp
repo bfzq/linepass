@@ -8,9 +8,10 @@
 
 #include "command.hpp"
 
-//int m() {
-//
-//}
+// 判断是否是结束字符
+bool equlEndSign(char c) {
+	return ('\0' == c) ? true : false ;
+}
 
 /*对客户端的命令进行分解*/
 bool Command::morphology() {
@@ -52,12 +53,49 @@ bool Command::morphology() {
 	}
 }
 
+bool Command::checkMulti() {
+	if ((type::put == com.local_type) && equlEndSign(com.ai.account[0]) && equlEndSign(com.ai.passwd[0])) {
+		return true ;
+	} else {
+		return false ;
+	}
+}
+
+void getline(char* s) {
+	std::string str ;
+	if (getline(std::cin, str)) {
+		strcpy(s, str.c_str()) ;
+	}
+}
+
+void checkAndGetString(char*name, char* info) {
+	if (equlEndSign(info[0])) {
+		printf("%s: ",name) ;
+		getline(info) ;
+	}
+}
+
+void Command::multiInput() {
+	checkAndGetString("title", com.ai.title) ;
+	checkAndGetString("nickname", com.ai.nickname) ;
+	checkAndGetString("company", com.ai.company) ;
+	checkAndGetString("account", com.ai.account) ;
+	checkAndGetString("passwd", com.ai.passwd) ;
+}
+
 bool Command::input() {
 	std::cout << "# " ;
 	std::string s ;
 	if(getline(std::cin, s)) {// 输入正常则返回true
 		strcpy(cmm, s.c_str()) ;
-		return morphology() ;
+		if (morphology()) {
+			if (checkMulti()) {
+				multiInput() ;
+			}
+			return true ;
+		} else {
+			return false ;
+		}
 	}
 	return false ;
 }

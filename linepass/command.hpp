@@ -20,10 +20,13 @@
 
 class Command {
 private:
+//	bool multiEnable ; // 多行输入
 	char cmm[256] ;
 	struct command com ;
 private:
 	bool morphology() ;
+	bool checkMulti() ; // 检测是否需要多行输入
+	void multiInput() ; // 多行输入
 public:
 	bool input() ;
 //	char* cmd() ;
