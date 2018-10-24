@@ -62,21 +62,6 @@ bool Command::input() {
 	return false ;
 }
 
-
-//bool Command::morphology() {
-//	calcommand(cmm, [&](enum type ty, enum  subtype sub, char* value) {
-//		if (0 == strcmp(type, "quit") or 0 == strcmp(type, "q")) {
-//			com.type = type::quit ;
-//			return ;
-//		}else {
-////			com.type =
-//		}
-//	}) ;
-//
-//	return true ;
-//}
-
-
 struct command Command::cmd() {
 	return com ;
 }

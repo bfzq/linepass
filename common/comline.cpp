@@ -46,7 +46,7 @@ void ComLine::printHelpInfo() {
 	std::cout << "    --mysql-db	" << std::endl ;
 }
 
-
+// 寻找参数所在位置
 int ComLine::findParamIndex(int argc, char**argv, std::string param) {
 	for (int i = 1; i < argc; i++) {
                 std::string t = std::string(argv[i]);

@@ -51,74 +51,65 @@ bool ComProgram::connectServer() {
 
 bool ComProgram::interactive() {
 	struct proto_msg pm ;
-	while (cmd->input()) {
-		if (cmd->cmd().local_type == type::quit) {
-			return false ;
-		} else {
-			struct command cd = cmd->cmd() ;
-			char* tmp_c = (char*)malloc(sizeof(cd)) ;
-			memcpy(tmp_c, (char*)&cd, sizeof(cd)) ;
-			// 加密
-			std::string cmd_str = ECB_AESEncryptStr(aesKey, tmp_c, sizeof(cd)) ;
-			
-			
-			pm.server = COMMAND ;
-			pm.len = cmd_str.size() ;
-			pm.data = (int8_t*)cmd_str.c_str() ;
-			
-			uint32_t len = 0 ;
-			uint8_t* pData = NULL ;
-			pData = link->encode(pm, len) ;
-			if(link->clientSend(pData, len)) {
-				Server type ;
-				unsigned int num = 0 ; // 返回结果数
-				bool revcOk ; // 正常查询结果
-				do {
-					
-					revcOk = link->clientRevc([&type,&num](struct proto_msg pm){
-						type = pm.server ;
-						switch(pm.server) {
-							case Server::MESSAGE: {
-								std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
-								printf("message: %s\n",back_str.c_str()) ;
-								break ;
+	while (true) {
+		if (cmd->input()) {
+			if (cmd->cmd().local_type == type::quit) {
+				return false ;
+			} else {
+				struct command cd = cmd->cmd() ;
+				char* tmp_c = (char*)malloc(sizeof(cd)) ;
+				memcpy(tmp_c, (char*)&cd, sizeof(cd)) ;
+				// 加密
+				std::string cmd_str = ECB_AESEncryptStr(aesKey, tmp_c, sizeof(cd)) ;
+				
+				
+				pm.server = COMMAND ;
+				pm.len = cmd_str.size() ;
+				pm.data = (int8_t*)cmd_str.c_str() ;
+				
+				uint32_t len = 0 ;
+				uint8_t* pData = NULL ;
+				pData = link->encode(pm, len) ;
+				if(link->clientSend(pData, len)) {
+					Server type ;
+					unsigned int num = 0 ; // 返回结果数
+					bool revcOk ; // 正常查询结果
+					do {
+						revcOk = link->clientRevc([&type,&num](struct proto_msg pm){
+							type = pm.server ;
+							switch(pm.server) {
+								case Server::MESSAGE: {
+									std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
+									printf("message: %s\n",back_str.c_str()) ;
+									break ;
+								}
+								case Server::RESULT: {
+									uint8_t* bdata = (uint8_t*)ECB_AESDecryptStr(aesKey, (const char*)pm.data).c_str() ;
+									struct command cmd ;
+									memcpy(&cmd, bdata, sizeof(command)) ;
+									printf("   title : %s\n", cmd.ai.title) ;
+									printf(" account : %s\n", cmd.ai.account) ;
+									printf("  passwd : %s\n", cmd.ai.passwd) ;
+									printf("nickname : %s\n", cmd.ai.nickname) ;
+									printf(" company : %s\n", cmd.ai.company) ;
+									num++ ;
+									break ;
+								}
+								default:{
+									break;
+								}
 							}
-							case Server::RESULT: {
-								uint8_t* bdata = (uint8_t*)ECB_AESDecryptStr(aesKey, (const char*)pm.data).c_str() ;
-								struct command cmd ;
-								memcpy(&cmd, bdata, sizeof(command)) ;
-								printf("   title : %s\n", cmd.ai.title) ;
-								printf(" account : %s\n", cmd.ai.account) ;
-								printf("  passwd : %s\n", cmd.ai.passwd) ;
-								printf("nickname : %s\n", cmd.ai.nickname) ;
-								printf(" company : %s\n", cmd.ai.company) ;
-								num++ ;
-								break ;
-							}
-							default:{
-								break;
-							}
-						}
-						return true ;
-					}) ;
-				} while(Server::RESULT == type) ;
-				if (revcOk) {
-					printf("-----------------------------\n") ;
-                                	printf("Get %u result.\n\n",num) ;
+							return true ;
+						}) ;
+					} while(Server::RESULT == type) ;
+					if (revcOk) {
+						printf("-----------------------------\n") ;
+						printf("Get %u result.\n\n",num) ;
+					}
 				}
 			}
-			
-			
-			
-			
-			//			std::string cmd_str = ECB_AESEncryptStr(aesKey, cmd->cmd(), strlen(cmd->cmd())) ;
-			//			pm.server = COMMAND ;
-			//			pm.len = cmd_str.size() ;
-			//			pm.data = (int8_t*)cmd_str.c_str() ;
-			//			uint32_t len = 0 ;
-			//			uint8_t* pData = NULL ;
-			//			pData = link->encode(pm, len) ;
-			
+		} else {
+			printf("command error!\n") ;
 		}
 	}
 	return true ;
