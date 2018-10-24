@@ -71,9 +71,11 @@ bool ComProgram::interactive() {
 			pData = link->encode(pm, len) ;
 			if(link->clientSend(pData, len)) {
 				Server type ;
+				unsigned int num = 0 ; // 返回结果数
+				bool revcOk ; // 正常查询结果
 				do {
 					
-					link->clientRevc([&type](struct proto_msg pm){
+					revcOk = link->clientRevc([&type,&num](struct proto_msg pm){
 						type = pm.server ;
 						switch(pm.server) {
 							case Server::MESSAGE: {
@@ -90,6 +92,7 @@ bool ComProgram::interactive() {
 								printf("  passwd : %s\n", cmd.ai.passwd) ;
 								printf("nickname : %s\n", cmd.ai.nickname) ;
 								printf(" company : %s\n", cmd.ai.company) ;
+								num++ ;
 								break ;
 							}
 							default:{
@@ -99,6 +102,10 @@ bool ComProgram::interactive() {
 						return true ;
 					}) ;
 				} while(Server::RESULT == type) ;
+				if (revcOk) {
+					printf("-----------------------------\n") ;
+                                	printf("Get %u result.\n\n",num) ;
+				}
 			}
 			
 			
