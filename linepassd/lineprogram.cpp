@@ -94,19 +94,33 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 //	memcpy(&comma, cmd, sizeof(comma)) ;
 	comma.assemble(cmd) ;
 	switch (comma.local_type) {
-		case type::put:
+		case type::put:{
+			Mysqlc* local_mysql = mp->getMysqlCon() ;
 			try {
-				Mysqlc* local_mysql = mp->getMysqlCon() ;
 				local_mysql->begin() ;
-//				std::string sql_select_company = "select id"
-				std::string sql_company = "insert into company(ps_name) value(' "
+				std::string sql_select_company = "select id from company where ps_name = '"
 				+ std::string(comma.ai.company)
-				+ " ')" ;
-				local_mysql->execute(sql_company.c_str(),nullptr) ;
+				+ "'" ;
+				int psid = 0 ;
+				local_mysql->query(sql_select_company.c_str(), [&psid](MYSQL_ROW row){
+					psid = atoi(row[0]) ;
+					return true ;
+				}, [&psid](){
+					psid = -1 ;
+				}) ;
+				
+				if (psid < 0) {
+					std::string sql_company = "insert into company(ps_name) value('"
+					+ std::string(comma.ai.company)
+					+ "')" ;
+					local_mysql->execute(sql_company.c_str(),nullptr) ;
+				}
 				
 				std::string sql_account = "insert into accounts(user_id,company_id,title,account,passwd,nickname) value("
-				+ std::to_string((*uc).user_id) 
-				+ " , last_insert_id(),'"
+				+ std::to_string((*uc).user_id)
+				+ ","
+				+ ((psid < 0) ? "last_insert_id()" : std::to_string(psid))
+				+ ",'"
 				+ std::string(comma.ai.title)
 				+ "' , '"
 				+ std::string(comma.ai.account)
@@ -138,7 +152,8 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 				mp->backMysqlCon(local_mysql) ;
 				local_mysql = nullptr ;
 				
-			} catch (Mysqlc* local_mysql) {
+			} catch (MysqlcException &me) {
+				me.what() ;
 				local_mysql->rollback() ;
 				mp->backMysqlCon(local_mysql) ;
 				local_mysql = nullptr ;
@@ -164,6 +179,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 			
 //			std::string sql = "insert into "
 			break;
+		}
 		case type::show:
 			try {
 				Mysqlc* local_mysql = mp->getMysqlCon() ;
