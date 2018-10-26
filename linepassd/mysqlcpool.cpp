@@ -22,8 +22,8 @@ void MysqlcPool::init(mysql_config config, uint16_t num) {
 	pool = (mysql_item*)malloc(sizeof(mysql_item) * num) ;
 	this->num = num ;
 	for (uint16_t i = 0; i < num; i++) {
-		MySQLC* mc = new MySQLC() ;
-		mc->connect(config.host, config.user, config.passwd, config.db, config.port) ;
+		Mysqlc* mc = new Mysqlc() ;
+		mc->connect(config.host.c_str(), config.user.c_str(), config.passwd.c_str(), config.db.c_str(), config.port) ;
 		struct mysql_item mi(mc);
 		pool[i] = mi ;
 	}
@@ -33,7 +33,7 @@ void MysqlcPool::uinit() {
 	free(pool) ;
 }
 
-MySQLC* MysqlcPool::getMysqlCon() {
+Mysqlc* MysqlcPool::getMysqlCon() {
 	for (uint16_t i = 0; i < num; i++) {
 		if (pool[i].status == false) {
 			pool[i].status = true ;
@@ -44,7 +44,7 @@ MySQLC* MysqlcPool::getMysqlCon() {
 }
 
 
-void MysqlcPool::backMysqlCon(MySQLC * mc) {
+void MysqlcPool::backMysqlCon(Mysqlc * mc) {
 	for (uint16_t i = 0; i < num; i++) {
 		if (pool[i].mc == mc) {
 			pool[i].status = false ;
