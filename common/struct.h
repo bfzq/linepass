@@ -45,8 +45,8 @@ struct accountinfo {
 };
 
 
-enum type : uint16_t {show,put,del,search,quit,result, ty_zero} ;
-enum subtype : uint16_t {all,tittle,company,account,nickname,sub_zero} ;
+enum type: uint16_t {show,put,del,search,quit,result, ty_zero} ;
+enum subtype: uint16_t {all,tittle,company,account,nickname,sub_zero} ;
 const char type_s[5][7] = {"show","put","del","search","quit"} ;
 const char subtype_s[5][9] = {"all","title","company","account","nickname"} ;
 
@@ -65,8 +65,6 @@ struct command {
 	// 拆除函数
 	uint8_t* disassemble() {
 		static uint8_t disass[1030] ; // 拆解存储器
-//		printf("%?",) ;
-		printf( "%o  %d   %x " , htons(local_type) , htons(local_type) ,htons(local_type) );
 		*((uint16_t*)disass) = htons(local_type) ;
 		*((uint16_t*)(disass + 2)) = htons(local_sutype) ;
 		memcpy(disass + 4, content, CONTENTSIZE) ;
@@ -80,7 +78,6 @@ struct command {
 	
 	// 装配函数
 	void assemble(uint8_t* disass) {
-		printf( "%o  %d   %x " ,*((uint16_t*)disass),*((uint16_t*)disass),*((uint16_t*)disass)) ;
 		local_type = (type)ntohs(*((uint16_t*)disass)) ;
 		local_sutype = (subtype)ntohs(*((uint16_t*)(disass + 2))) ;
 		memcpy(content,disass + 4, CONTENTSIZE) ;

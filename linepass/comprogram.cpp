@@ -60,8 +60,13 @@ bool ComProgram::interactive() {
 //				char* tmp_c = (char*)malloc(sizeof(cd)) ;
 //				memcpy(tmp_c, (char*)&cd, sizeof(cd)) ; // 以数据装配代替
 				// 加密
+//				const char* t1 = (const char*)cd.disassemble() ;
+//				uint8_t* t2 = cd.disassemble() ;
 				std::string cmd_str = ECB_AESEncryptStr(aesKey, (const char*)cd.disassemble(), 1030) ;
-				
+//				int8_t* t3 = (int8_t*)malloc(sizeof(int8_t) * (cmd_str.size() + 1)) ;;
+//				memcpy(t3, cmd_str.c_str(), cmd_str.size()) ;
+//				uint8_t* t4 = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)t3).c_str() ;
+//				printf("= %s\n\n%u,%u,%u\n",(int8_t*)cmd_str.c_str(),t1[1],t2[1],t4[1]) ;
 //				printf("%s\n",cmd_str.c_str()) ;
 				pm.server = COMMAND ;
 				pm.len = cmd_str.size() ;

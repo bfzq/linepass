@@ -98,6 +98,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 			try {
 				Mysqlc* local_mysql = mp->getMysqlCon() ;
 				local_mysql->begin() ;
+//				std::string sql_select_company = "select id"
 				std::string sql_company = "insert into company(ps_name) value(' "
 				+ std::string(comma.ai.company)
 				+ " ')" ;
@@ -297,7 +298,10 @@ void LineProgram::tasks() {
 				 *	解密数据包
 				 */
 				uint8_t* unsafeData = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
-				free(data) ;
+//				printf("+----") ;
+//				printf("= %s\n\n,%u",(const char*)data,unsafeData[1]);
+//				printf("----+") ;
+				
 				
 				switch (ph.server) {
 					// 登录验证
@@ -337,9 +341,7 @@ void LineProgram::tasks() {
 					default:
 						break;
 				}
-				
-				
-				
+				free(data) ;
 			}
 		}
 		close(client_socket) ;
@@ -348,7 +350,7 @@ void LineProgram::tasks() {
 
 
 int LineProgram::main() {
-	//	intoDameon() ; // xcode 编辑期间关闭
+	intoDameon() ; // xcode 编辑期间关闭
 	return 0;
 }
 
