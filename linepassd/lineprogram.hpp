@@ -59,11 +59,11 @@ private:
 	void initParameter(int argc, char* argv[]) ;
 	void getServerPara() ;
 //	bool certify(int) ;
-	bool certify(struct user_config*, int8_t*) ;
+	bool certify(struct user_config*, uint8_t*) ;
 	
 //	void hideArg(int argc, char** argv, const char* arg) ;
 private:
-	void commandWork(struct user_config* uc, int client_socket, int8_t* cmd) ;
+	void commandWork(struct user_config* uc, int client_socket, uint8_t* cmd) ;
 };
 
 #endif /* lineprogram_hpp */

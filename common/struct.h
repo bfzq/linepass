@@ -13,6 +13,14 @@
 
 #define CALLBACKOK "ok"
 #define CALLBACKERR "err"
+
+
+#define TITLESIZE 64
+#define COMPANYSIZE 128
+#define ACCOUNTSIZE 256
+#define PASSWDSIZE 256
+#define NICKNAMESIZE 64
+#define CONTENTSIZE 256
 //#define LOGIN 0
 //#define COMMAND 1
 
@@ -22,11 +30,11 @@ struct user_config {
 	char user_password[256];
 };
 struct accountinfo {
-	char title[64] = {'\0'};
-	char company[128]  = {'\0'};
-	char account[256]  = {'\0'};
-	char passwd[256]  = {'\0'};
-	char nickname[64]  = {'\0'};
+	char title[TITLESIZE] = {'\0'};
+	char company[COMPANYSIZE]  = {'\0'};
+	char account[ACCOUNTSIZE]  = {'\0'};
+	char passwd[PASSWDSIZE]  = {'\0'};
+	char nickname[NICKNAMESIZE]  = {'\0'};
 	void empty() {
 		title[0] = '\0' ;
 		company[0] = '\0' ;
@@ -37,8 +45,8 @@ struct accountinfo {
 };
 
 
-enum type : ushort {show = 0,put = 1,del = 2,search = 3,quit = 4,result = 5, ty_zero = 6} ;
-enum subtype : ushort {all = 0,tittle,company,account,nickname,sub_zero} ;
+enum type : uint16_t {show,put,del,search,quit,result, ty_zero} ;
+enum subtype : uint16_t {all,tittle,company,account,nickname,sub_zero} ;
 const char type_s[5][7] = {"show","put","del","search","quit"} ;
 const char subtype_s[5][9] = {"all","title","company","account","nickname"} ;
 
@@ -51,8 +59,38 @@ const char subtype_s[5][9] = {"all","title","company","account","nickname"} ;
 struct command {
 	enum type local_type; // 0 show, 1 put , 2 search
 	enum subtype local_sutype;
-	char content[256] ; //a content what used by 'show' or 'search'
+	char content[CONTENTSIZE] ; //a content what used by 'show' or 'search'
 	struct accountinfo ai ; // used by put
+	
+	// 拆除函数
+	uint8_t* disassemble() {
+		static uint8_t disass[1030] ; // 拆解存储器
+//		printf("%?",) ;
+		printf( "%o  %d   %x " , htons(local_type) , htons(local_type) ,htons(local_type) );
+		*((uint16_t*)disass) = htons(local_type) ;
+		*((uint16_t*)(disass + 2)) = htons(local_sutype) ;
+		memcpy(disass + 4, content, CONTENTSIZE) ;
+		memcpy(disass + 4 + CONTENTSIZE, (uint8_t*)ai.title, TITLESIZE) ;
+		memcpy(disass + 4 + CONTENTSIZE + TITLESIZE, (uint8_t*)ai.company, COMPANYSIZE) ;
+		memcpy(disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE, (uint8_t*)ai.account, ACCOUNTSIZE) ;
+		memcpy(disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE + ACCOUNTSIZE, (uint8_t*)ai.passwd, PASSWDSIZE) ;
+		memcpy(disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE + ACCOUNTSIZE + PASSWDSIZE, (uint8_t*)ai.nickname, NICKNAMESIZE) ;
+		return disass ;
+	}
+	
+	// 装配函数
+	void assemble(uint8_t* disass) {
+		printf( "%o  %d   %x " ,*((uint16_t*)disass),*((uint16_t*)disass),*((uint16_t*)disass)) ;
+		local_type = (type)ntohs(*((uint16_t*)disass)) ;
+		local_sutype = (subtype)ntohs(*((uint16_t*)(disass + 2))) ;
+		memcpy(content,disass + 4, CONTENTSIZE) ;
+		memcpy(ai.title, disass + 4 + CONTENTSIZE, TITLESIZE) ;
+		memcpy(ai.company, disass + 4 + CONTENTSIZE + TITLESIZE, COMPANYSIZE) ;
+		memcpy(ai.account, disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE, ACCOUNTSIZE) ;
+		memcpy(ai.passwd, disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE + ACCOUNTSIZE, PASSWDSIZE) ;
+		memcpy(ai.nickname, disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE + ACCOUNTSIZE + PASSWDSIZE, NICKNAMESIZE) ;
+	}
+	
 	void empty() {
 		ai.empty() ;
 		local_type = type::ty_zero ;

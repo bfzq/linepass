@@ -64,7 +64,7 @@ void LineProgram::initParameter(int argc, char **argv) {
 }
 
 
-bool LineProgram::certify(struct user_config* uc, int8_t* buf) {
+bool LineProgram::certify(struct user_config* uc, uint8_t* buf) {
 //	struct user_config uc;
 	bool retVal = false;
 	memcpy(uc, buf, sizeof(user_config)) ;
@@ -89,9 +89,10 @@ bool LineProgram::certify(struct user_config* uc, int8_t* buf) {
 }
 
 
-void LineProgram::commandWork(struct user_config* uc, int client_socket,int8_t *cmd) {
+void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t *cmd) {
 	struct command comma;
-	memcpy(&comma, cmd, sizeof(comma)) ;
+//	memcpy(&comma, cmd, sizeof(comma)) ;
+	comma.assemble(cmd) ;
 	switch (comma.local_type) {
 		case type::put:
 			try {
@@ -290,13 +291,13 @@ void LineProgram::tasks() {
 					continue ;
 				}
 				data[datalen] = '\0' ;
-				// printf("== %s", data) ;
+//				 printf("== %s", data) ;
 				
 				/*
 				 *	解密数据包
 				 */
-				int8_t* unsafeData = (int8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
-				free(data) ;	
+				uint8_t* unsafeData = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
+				free(data) ;
 				
 				switch (ph.server) {
 					// 登录验证

@@ -57,12 +57,12 @@ bool ComProgram::interactive() {
 				return false ;
 			} else {
 				struct command cd = cmd->cmd() ;
-				char* tmp_c = (char*)malloc(sizeof(cd)) ;
-				memcpy(tmp_c, (char*)&cd, sizeof(cd)) ;
+//				char* tmp_c = (char*)malloc(sizeof(cd)) ;
+//				memcpy(tmp_c, (char*)&cd, sizeof(cd)) ; // 以数据装配代替
 				// 加密
-				std::string cmd_str = ECB_AESEncryptStr(aesKey, tmp_c, sizeof(cd)) ;
+				std::string cmd_str = ECB_AESEncryptStr(aesKey, (const char*)cd.disassemble(), 1030) ;
 				
-				
+//				printf("%s\n",cmd_str.c_str()) ;
 				pm.server = COMMAND ;
 				pm.len = cmd_str.size() ;
 				pm.data = (int8_t*)cmd_str.c_str() ;
