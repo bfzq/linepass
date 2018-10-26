@@ -69,9 +69,9 @@ bool LineProgram::certify(struct user_config* uc, uint8_t* buf) {
 	bool retVal = false;
 	memcpy(uc, buf, sizeof(user_config)) ;
 	//	printf("user:%s,password:%s\n",uc.user_user,uc.user_password) ;
-	MySQLC* local_mysql = mp->getMysqlCon() ;
+	Mysqlc* local_mysql = mp->getMysqlCon() ;
 	std::string sql = "select id,password from users where username='" + std::string((*uc).user_user) + "' limit 1" ;
-	local_mysql->query(sql, [&retVal,&uc](MYSQL_ROW row) {
+	local_mysql->query(sql.c_str(), [&retVal,&uc](MYSQL_ROW row) {
 		if (strcmp((*uc).user_password, ECB_AESDecryptStr(aesDbKey,row[1]).c_str()) == 0) {
 			(*uc).user_id = atoi(row[0]) ;
 			retVal = true ;
@@ -96,12 +96,12 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 	switch (comma.local_type) {
 		case type::put:
 			try {
-				MySQLC* local_mysql = mp->getMysqlCon() ;
+				Mysqlc* local_mysql = mp->getMysqlCon() ;
 				local_mysql->begin() ;
 				std::string sql_company = "insert into company(ps_name) value(' "
 				+ std::string(comma.ai.company)
 				+ " ')" ;
-				local_mysql->query(sql_company) ;
+				local_mysql->execute(sql_company.c_str(),nullptr) ;
 				
 				std::string sql_account = "insert into accounts(user_id,company_id,title,account,passwd,nickname) value("
 				+ std::to_string((*uc).user_id) 
@@ -115,7 +115,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 				+ std::string(comma.ai.nickname)
 				+ "')";
 				
-				local_mysql->query(sql_account) ;
+				local_mysql->execute(sql_account.c_str(), nullptr) ;
 				local_mysql->commit() ;
 				
 				/*
@@ -137,7 +137,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 				mp->backMysqlCon(local_mysql) ;
 				local_mysql = nullptr ;
 				
-			} catch (MySQLC* local_mysql) {
+			} catch (Mysqlc* local_mysql) {
 				local_mysql->rollback() ;
 				mp->backMysqlCon(local_mysql) ;
 				local_mysql = nullptr ;
@@ -165,7 +165,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 			break;
 		case type::show:
 			try {
-				MySQLC* local_mysql = mp->getMysqlCon() ;
+				Mysqlc* local_mysql = mp->getMysqlCon() ;
 //				local_mysql->begin() ;
 				std::string sql = "select a.title,a.account,a.passwd,a.nickname,c.ps_name as company from accounts as a left join company as c on a.company_id=c.id where user_id = "
 					+ std::to_string((*uc).user_id);
@@ -183,7 +183,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 				}
 				sql = sql + ";" ;
 				
-				local_mysql->query(sql, [&](MYSQL_ROW row) {
+				local_mysql->query(sql.c_str(), [&](MYSQL_ROW row) {
 					struct command cmd ;
 					cmd.local_type = result ;
 					if(NULL != row[0]) memcpy(cmd.ai.title, row[0], strlen(row[0])) ;
@@ -241,7 +241,7 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 				mp->backMysqlCon(local_mysql) ;
 				local_mysql = nullptr ;
 				
-			} catch(MySQLC* local_mysql) {
+			} catch(Mysqlc* local_mysql) {
 //				local_mysql->rollback() ;
 				mp->backMysqlCon(local_mysql) ;
 				local_mysql = nullptr ;

@@ -27,8 +27,8 @@
 
 struct mysql_item {
 	bool status ; // true - using, false - not use
-	MySQLC* mc ;
-	mysql_item(MySQLC* m) {
+	Mysqlc* mc ;
+	mysql_item(Mysqlc* m) {
 		status = false ;
 		mc = m ;
 	}
@@ -69,8 +69,8 @@ public:
 public:
 	void init(mysql_config, uint16_t) ;
 public:
-	MySQLC* getMysqlCon() ;
-	void backMysqlCon(MySQLC*) ;
+	Mysqlc* getMysqlCon() ;
+	void backMysqlCon(Mysqlc*) ;
 };
 
 #endif /* mysqlcpool_hpp */
