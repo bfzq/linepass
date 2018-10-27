@@ -50,8 +50,6 @@ public:
 public:
 	int main(int argc, char* argv[]) ;
 	int main() ;
-public:
-	
 private:
 	void initMysqlPool() ;
 	bool intoDameon() ; //守护程序
@@ -60,10 +58,14 @@ private:
 	void getServerPara() ;
 //	bool certify(int) ;
 	bool certify(struct user_config*, uint8_t*) ;
-	
+	// 返回客户端消息
+	void feedBack(int client_socket, Server server , const char* unsafedata, size_t datasize) ;
 //	void hideArg(int argc, char** argv, const char* arg) ;
 private:
 	void commandWork(struct user_config* uc, int client_socket, uint8_t* cmd) ;
+private:
+	void showUserAccount(struct command comma, struct user_config* uc, int client_socket) ; // 查询用户帐号
+	void putAccountToServer(struct command comma, struct user_config* uc, int client_socket) ; // 添加用户帐号
 };
 
 #endif /* lineprogram_hpp */

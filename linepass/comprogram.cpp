@@ -57,17 +57,9 @@ bool ComProgram::interactive() {
 				return false ;
 			} else {
 				struct command cd = cmd->cmd() ;
-//				char* tmp_c = (char*)malloc(sizeof(cd)) ;
-//				memcpy(tmp_c, (char*)&cd, sizeof(cd)) ; // 以数据装配代替
 				// 加密
-//				const char* t1 = (const char*)cd.disassemble() ;
-//				uint8_t* t2 = cd.disassemble() ;
 				std::string cmd_str = ECB_AESEncryptStr(aesKey, (const char*)cd.disassemble(), 1030) ;
-//				int8_t* t3 = (int8_t*)malloc(sizeof(int8_t) * (cmd_str.size() + 1)) ;;
-//				memcpy(t3, cmd_str.c_str(), cmd_str.size()) ;
-//				uint8_t* t4 = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)t3).c_str() ;
-//				printf("= %s\n\n%u,%u,%u\n",(int8_t*)cmd_str.c_str(),t1[1],t2[1],t4[1]) ;
-//				printf("%s\n",cmd_str.c_str()) ;
+
 				pm.server = COMMAND ;
 				pm.len = cmd_str.size() ;
 				pm.data = (int8_t*)cmd_str.c_str() ;
@@ -78,14 +70,16 @@ bool ComProgram::interactive() {
 				if(link->clientSend(pData, len)) {
 					Server type ;
 					unsigned int num = 0 ; // 返回结果数
-					bool revcOk ; // 正常查询结果
+					unsigned revcStatus =  0; // 正常查询结果
 					do {
-						revcOk = link->clientRevc([&type,&num](struct proto_msg pm){
+						link->clientRevc([&revcStatus,&type,&num](struct proto_msg pm){
 							type = pm.server ;
 							switch(pm.server) {
 								case Server::MESSAGE: {
 									std::string back_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
+									printf("---\n") ;
 									printf("message: %s\n",back_str.c_str()) ;
+									revcStatus = 1 ;
 									break ;
 								}
 								case Server::RESULT: {
@@ -98,6 +92,8 @@ bool ComProgram::interactive() {
 									printf("nickname : %s\n", cmd.ai.nickname) ;
 									printf(" company : %s\n", cmd.ai.company) ;
 									num++ ;
+									printf("---\n") ;
+									revcStatus = 2 ;
 									break ;
 								}
 								default:{
@@ -107,8 +103,7 @@ bool ComProgram::interactive() {
 							return true ;
 						}) ;
 					} while(Server::RESULT == type) ;
-					if (revcOk) {
-						printf("-----------------------------\n") ;
+					if (2 == revcStatus) {
 						printf("Get %u result.\n\n",num) ;
 					}
 				}
@@ -134,7 +129,7 @@ int ComProgram::main(int argc, char **argv) {
 	 * 连接服务器，失败退出
 	 */
 	if (!connectServer()) {
-		log("err: can not connect linepasswd server.") ;
+		log("err: can not connect linepassd server.") ;
 		return 1 ;
 	}
 	
@@ -162,9 +157,6 @@ bool ComProgram::certify(LineLink* lk) {
 	struct user_config uc ; // struct.h
 	struct proto_msg pm ; // link.hpp
 	
-	//	uc.user_user = cc.connect_user ;
-	//	uc.user_password = cc.connect_password ;
-	
 	// 把用户信息复制到uc
 	strcpy(uc.user_user, cc.connect_user.c_str()) ;
 	strcpy(uc.user_password, cc.connect_password.c_str()) ;
@@ -179,8 +171,6 @@ bool ComProgram::certify(LineLink* lk) {
 	pm.server = LOGIN ;
 	uint32_t package_size;
 	uint8_t* pdata = link->encode(pm, package_size) ;
-	
-	//	printf("发送密文:%s,长度:%d",pm.data,pm.len) ;
 	
 	/*
 	 *	发送登录验证信息
@@ -197,7 +187,6 @@ bool ComProgram::certify(LineLink* lk) {
 		try {
 			if (LOGIN == pm.server) {
 				const char* tmp_str = ECB_AESDecryptStr(aesKey, (const char*)pm.data).c_str() ;
-				//			printf("接收密文:%s,长度:%d,解密:%s",pm.data,pm.len,tmp_str) ;
 				if (!strcmp(tmp_str, CALLBACKOK)) {
 					retVal = true ;
 				}

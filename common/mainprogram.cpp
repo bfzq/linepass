@@ -9,12 +9,6 @@
 #include "mainprogram.hpp"
 
 void MainProgram::hideArg(int argc, char **argv, const char *arg) {
-//        for (int i = 1; i < argc; i++) {
-//                if (0 == strcmp(argv[i], arg)) {
-//                	memset(argv[i], 'x', strlen(argv[i]));
-//			break ;
-//		}
-//        }
 	int idx = cl->findParamIndex(argc,argv,std::string(arg)) ;
 	if(idx >= 0) memset(argv[idx], 'x', strlen(argv[idx]));
 }
