@@ -7,3 +7,7 @@ clean:
 	make clean -C linepass
 	make clean -C linepassd
 install:
+	cp linepassd/linepassd /usr/local/bin/
+	cp linepass/linepass /usr/local/bin/
+uninstall:
+	rm -rf /usr/local/bin/linepass*

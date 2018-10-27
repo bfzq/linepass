@@ -108,8 +108,6 @@ bool ComProgram::interactive() {
 					}
 				}
 			}
-		} else {
-			printf("command error!\n") ;
 		}
 	}
 	return true ;
