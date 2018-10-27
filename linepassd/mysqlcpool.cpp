@@ -24,6 +24,7 @@ void MysqlcPool::init(mysql_config config, uint16_t num) {
 	for (uint16_t i = 0; i < num; i++) {
 		Mysqlc* mc = new Mysqlc() ;
 		mc->connect(config.host.c_str(), config.user.c_str(), config.passwd.c_str(), config.db.c_str(), config.port) ;
+		mc->setCharacterSet("utf8mb4") ;
 		struct mysql_item mi(mc);
 		pool[i] = mi ;
 	}

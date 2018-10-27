@@ -54,7 +54,7 @@ bool Command::morphology() {
 }
 
 bool Command::checkMulti() {
-	if ((type::put == com.local_type) && equlEndSign(com.ai.account[0]) && equlEndSign(com.ai.passwd[0])) {
+	if ((type::put == com.local_type) && (equlEndSign(com.ai.account[0]) || equlEndSign(com.ai.passwd[0]))) {
 		return true ;
 	} else {
 		return false ;
