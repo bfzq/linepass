@@ -8,6 +8,7 @@
 
 #ifndef struct_h
 #define struct_h
+#include <netinet/in.h>
 #include <string>
 #include <ctime>
 
