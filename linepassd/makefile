@@ -24,15 +24,15 @@ CFLAGS = -Wall -std=c++11 $(INC_CRYPTO) $(MYSQL_INCLUDE) $(INC_COMMON)
 LFLAGS = -ldl -lpthread --std=c++11 
 LIBLAGS = $(LIB_CRYPTO) $(MYSQL_LIB)
 
-OBJECTS = main.o mainprogram.o comline.o lineprogram.o linesecret.o \
-	mysqlc.o link.o threadpool.o mysqlcpool.o secret.o
+OBJECTS = main.o lineprogram.o mysqlc.o mysqlcpool.o
+COMOBJ = $(COMMON)/mainprogram.o $(COMMON)/comline.o $(COMMON)/linesecret.o $(COMMON)/threadpool.o $(COMMON)/secret.o $(COMMON)/link.o
 
-
-$(PROGRAM):$(OBJECTS)
-	$(CC) $(LFLAGS) -o $(PROGRAM) $(OBJECTS) $(LIBLAGS)
+$(PROGRAM):$(OBJECTS) $(COMOBJ)
+	$(CC) $(LFLAGS) -o $(PROGRAM) $(OBJECTS) $(COMOBJ) $(LIBLAGS)
 %.o:%.cpp
 	$(CC) $(DEBUG) $(CFLAGS)  -c $< -o $@
-%.o:$(COMMON)/%.cpp
-	$(CC) $(DEBUG) $(CFLAGS)  -c $< -o $@
+$(COMMON)/%.o:
+	$(MAKE) -C $(COMMON)/
 clean:
-	rm -rf *.o $(PROGRAM)
+	rm -rf *.o $(PROGRAM)a
+	$(MAKE) clean -C $(COMMON)/
