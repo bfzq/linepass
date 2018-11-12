@@ -34,5 +34,5 @@ $(PROGRAM):$(OBJECTS) $(COMOBJ)
 $(COMMON)/%.o:
 	$(MAKE) -C $(COMMON)/
 clean:
-	rm -rf *.o $(PROGRAM)a
+	rm -rf *.o $(PROGRAM)
 	$(MAKE) clean -C $(COMMON)/
