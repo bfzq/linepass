@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 
+#include <functional>
+
 
 
 
@@ -34,7 +36,9 @@ namespace bfzq {
 		void Insert(T) ;
 		bool Delete(T&) ;
 		bool Delete(unsigned int index) ;
+		void foreach(std::function<void(T)>) const;
 		unsigned int size() ;
+		void clean() ;
 		
 	private:
 		Node<T>* _head ;
@@ -45,12 +49,9 @@ namespace bfzq {
 	
 	template <typename T>
 	List<T>::List(const List& list) {
-		Node<T>* finger = _head ;
-		while (finger) {
-			Insert(finger->v) ;
-			finger = finger->next ;
-		}
-		finger = nullptr ;
+		list.foreach([this](T t) {
+			Insert(t) ;
+		}) ;
 	}
 	
 	template <typename T>
@@ -84,7 +85,14 @@ namespace bfzq {
 	
 	template <typename T>
 	bool List<T>::Delete(T& t) {
-		
+		unsigned int idx = 0 ;
+		foreach([&idx,&t](T node) {
+			if (node == *t) {
+				return ;
+			}
+			idx++ ;
+		}) ;
+		return Delete(idx) ;
 	}
 	
 	template <typename T>
@@ -114,17 +122,24 @@ namespace bfzq {
 		return false ;
 	}
 	
+	template <typename T>
+	void List<T>::foreach(std::function<void(T)> func) const{
+		Node<T>* node = _head ;
+		do {
+			func(node->v) ;
+		} while (nullptr != (node = node->next));
+	}
+	
 	
 	template <typename T>
 	unsigned int List<T>::size() {
 		return _length ;
 	}
 	
-	
-	
-	
-	
-	
+	template <typename T>
+	void List<T>::clean() {
+		
+	}
 }
 
 #endif /* list_hpp */
