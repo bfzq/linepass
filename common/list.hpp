@@ -56,16 +56,7 @@ namespace bfzq {
 	
 	template <typename T>
 	List<T>::~List() {
-		while (_tail) {
-			if (_tail->per != nullptr) {
-				_tail = _tail->per ;
-				delete _tail->next ;
-				_tail->next = nullptr ;
-			} else {
-				delete _tail ;
-				_tail = nullptr ;
-			}
-		}
+		clean() ;
 	}
 	
 	template <typename T>
@@ -125,6 +116,7 @@ namespace bfzq {
 	template <typename T>
 	void List<T>::foreach(std::function<void(T)> func) const{
 		Node<T>* node = _head ;
+		if (!node) return ;
 		do {
 			func(node->v) ;
 		} while (nullptr != (node = node->next));
@@ -138,7 +130,16 @@ namespace bfzq {
 	
 	template <typename T>
 	void List<T>::clean() {
-		
+		while (_tail) {
+			if (_tail->per != nullptr) {
+				_tail = _tail->per ;
+				delete _tail->next ;
+				_tail->next = nullptr ;
+			} else {
+				delete _tail ;
+				_tail = nullptr ;
+			}
+		}
 	}
 }
 
