@@ -140,6 +140,7 @@ namespace bfzq {
 				_tail = nullptr ;
 			}
 		}
+		_head = nullptr ;
 	}
 }
 
