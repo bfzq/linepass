@@ -41,9 +41,9 @@ namespace bfzq {
 		void clean() ;
 		
 	private:
-		Node<T>* _head ;
-		Node<T>* _tail ;
-		unsigned int _length ;
+		Node<T>* _head = nullptr;
+		Node<T>* _tail = nullptr;
+		unsigned int _length = 0;
 		
 	} ;
 	
