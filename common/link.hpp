@@ -8,6 +8,8 @@
 
 #ifndef link_hpp
 #define link_hpp
+#include "const.h"
+#include "secret.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -46,7 +48,28 @@ struct proto_head {
 struct proto_msg {
 	uint32_t len ; // 结构体长度
 	Server server ; // 标识服务 2 byte 1:字符串
-	int8_t* data ; //
+	uint8_t* data ; // 加密数据
+	proto_msg() = default ;
+	proto_msg(const proto_msg& mg) {
+		len = mg.len ;
+		server = mg.server ;
+		data = (uint8_t*)malloc(sizeof(uint8_t) * (len + 1)) ;
+		memcpy(data, mg.data, len + 1) ;
+	}
+	
+	proto_msg(Server s, const uint8_t* dat, size_t datasize) {
+		server = s ;
+		len = datasize ;
+		data = (uint8_t*)malloc(sizeof(uint8_t) * (datasize + 1)) ;
+		memcpy(data, dat, len + 1) ;
+	}
+	
+	~proto_msg() {
+		if (data) {
+			free(data) ;
+			data = nullptr ;
+		}
+	}
 };
 
 
