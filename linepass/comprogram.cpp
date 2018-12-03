@@ -8,6 +8,15 @@
 
 #include "comprogram.hpp"
 
+void print_list(bfzq::List<Account> accounts) {
+	accounts.foreach([](Account account) {
+		printf("%u :\n",account.aid) ;
+		account.list.foreach([](Field field) {
+			printf("\t%s : %s\t#secret:%d\n",field.fieldName.c_str(),field.value.c_str(),field.secret) ;
+		}) ;
+	}) ;
+}
+
 client_config::client_config(std::map<std::string, std::string>* m) {
 	init(m) ;
 }
@@ -46,33 +55,29 @@ bool ComProgram::connectServer() {
 	
 	if(!link->init()) return false;
 	return link->clientConnect() ;
+	return true ;
 }
 
-
 bool ComProgram::interactive() {
-	struct proto_msg pm ;
 	while (true) {
 		if (cmd->input()) {
-			if (cmd->cmd().local_type == type::quit) {
+			if (cmd->getCmm() == _SLASH_Q_ || cmd->getCmm() == _QUIT_
+				|| cmd->getCmm() == _EXIT_) { // 主动退出
 				return false ;
 			} else {
-				struct command cd = cmd->cmd() ;
-				// 加密
-				std::string cmd_str = ECB_AESEncryptStr(aesKey, (const char*)cd.disassemble(), 1030) ;
-
-				pm.server = COMMAND ;
-				pm.len = cmd_str.size() ;
-				pm.data = (int8_t*)cmd_str.c_str() ;
-				
+				// 数据装配
+				std::string safedata = ECB_AESEncryptStr(aesKey, cmd->getCmm().c_str(), cmd->getCmm().length()) ;
+				struct proto_msg mg(COMMAND, (uint8_t*)safedata.c_str(), safedata.length()) ;
 				uint32_t len = 0 ;
 				uint8_t* pData = NULL ;
-				pData = link->encode(pm, len) ;
+				pData = link->encode(mg, len) ;
+				// 发送数据
 				if(link->clientSend(pData, len)) {
 					Server type ;
 					unsigned int num = 0 ; // 返回结果数
 					unsigned revcStatus =  0; // 正常查询结果
 					do {
-						link->clientRevc([&revcStatus,&type,&num](struct proto_msg pm){
+						link->clientRevc([&revcStatus,&type, this](struct proto_msg pm){
 							type = pm.server ;
 							switch(pm.server) {
 								case Server::MESSAGE: {
@@ -83,16 +88,23 @@ bool ComProgram::interactive() {
 									break ;
 								}
 								case Server::RESULT: {
-									uint8_t* bdata = (uint8_t*)ECB_AESDecryptStr(aesKey, (const char*)pm.data).c_str() ;
-									struct command cmd ;
-									memcpy(&cmd, bdata, sizeof(command)) ;
-									printf("   title : %s\n", cmd.ai.title) ;
-									printf(" account : %s\n", cmd.ai.account) ;
-									printf("  passwd : %s\n", cmd.ai.passwd) ;
-									printf("nickname : %s\n", cmd.ai.nickname) ;
-									printf(" company : %s\n", cmd.ai.company) ;
-									num++ ;
-									printf("---\n") ;
+									// 数据解密
+									std::string data = ECB_AESDecryptStr(aesKey, (const char*)pm.data) ;
+									// 数据打包进数据结构
+									bfzq::List<Account> accounts = json_to_struct<Account,bfzq::List>(data, [](Json::Value::Members::iterator iter, std::string json) {
+										Account account ;
+										account.aid = atoi((*iter).c_str()) ;
+										
+										account.list = json_to_struct<Field, bfzq::List>(json, [](bfzq::List<Field>& list, Json::Value value){
+											list.Insert(Field(value[0].asString(), value[1].asString(), value[2].asString() == "1"? true : false)) ;
+										}) ;
+										return account ;
+									}) ;
+									
+									print_list(accounts) ;
+									
+									
+									
 									revcStatus = 2 ;
 									break ;
 								}
@@ -103,14 +115,10 @@ bool ComProgram::interactive() {
 							return true ;
 						}) ;
 					} while(Server::RESULT == type) ;
-					if (2 == revcStatus) {
-						printf("Get %u result.\n\n",num) ;
-					}
 				}
 			}
 		}
 	}
-	return true ;
 }
 
 
@@ -153,7 +161,6 @@ bool ComProgram::certify(LineLink* lk) {
 	 *	转移用户信息
 	 */
 	struct user_config uc ; // struct.h
-	struct proto_msg pm ; // link.hpp
 	
 	// 把用户信息复制到uc
 	strcpy(uc.user_user, cc.connect_user.c_str()) ;
@@ -163,10 +170,11 @@ bool ComProgram::certify(LineLink* lk) {
 	char* plain = (char*)malloc(sizeof(char) * size) ;
 	memcpy(plain,(char*)&uc,size) ;
 	
+	
+	
+	
 	std::string data = ECB_AESEncryptStr(aesKey,plain,size) ;
-	pm.data = (int8_t*)data.c_str() ;
-	pm.len = data.size();
-	pm.server = LOGIN ;
+	struct proto_msg pm(LOGIN, (uint8_t*)data.c_str(), data.length()) ;
 	uint32_t package_size;
 	uint8_t* pdata = link->encode(pm, package_size) ;
 	
@@ -190,7 +198,7 @@ bool ComProgram::certify(LineLink* lk) {
 				}
 			}
 		} catch (Exception &e) {
-			printf("%s\n",e.what()) ;
+			printf("err: %s\n",e.what()) ;
 		}
 	}) ;
 	return retVal ;

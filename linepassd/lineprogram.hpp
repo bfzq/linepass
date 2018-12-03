@@ -20,6 +20,11 @@
 #include "const.h"
 //#include "linedata.hpp"
 #include <stdlib.h>
+#include "granalysis.hpp"
+//#include "json.h"
+#include "netstruct.hpp"
+
+
 
 #define LISTENPORT "listen-port"
 #define POOLNUM "pool-num"
@@ -44,6 +49,7 @@ private:
 	LineLink* link ; // 网络
 	MysqlcPool* mp ; // mysql连接池
 	struct mysql_config mc ; // mysql 连接信息
+	Granalysis granalysis ; // 语法解析器
 public:
 	LineProgram() ;
 	~LineProgram() ;

@@ -52,7 +52,7 @@ bool LineLink::init() {
 			int flag = 1 ;
 			if ((local_socket = socket(PF_INET,SOCK_STREAM,0)) < 0 // 创建服务器端套接字--IPv4协议，面向连接通信，TCP协议
 				|| setsockopt(local_socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0
-				|| bind(local_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) < 0 // 将套接字绑定到服务器的网络地址上
+				|| bind(local_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) < 0 // 将套接字绑定到服务器的网络地址上, 与std::bind不同
 				) {
 				perror("init error") ;
 				return false ;
@@ -130,17 +130,15 @@ bool LineLink::clientRevc(std::function<void (struct proto_msg)> revc) {
 		}
 		if (ph.len > PROTO_HEAD_SIZE) {
 			uint32_t datalen = ph.len - PROTO_HEAD_SIZE ;
-			int8_t* data = (int8_t*)malloc(sizeof(int8_t) * (datalen + 1)) ;
+			uint8_t* data = (uint8_t*)malloc(sizeof(uint8_t) * (datalen + 2)) ;
 			if ((len = recv(local_socket, data, datalen, 0)) > 0) {
 				data[datalen] = '\0' ;
 				if (len == ph.len - PROTO_HEAD_SIZE) {
-					struct proto_msg pm ;
-					pm.server = ph.server ;
-					pm.len = len ;
-					pm.data = data ;
+					struct proto_msg pm(ph.server, data, len) ;
 					revc(pm) ;
 				}
 			}
+			free(data) ;
 		}
 	}
 	return true ;

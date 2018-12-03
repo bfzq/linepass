@@ -18,6 +18,7 @@
 #include <string>
 #include "logs.hpp"
 #include "secret.h"
+#include "netstruct.hpp"
 
 
 #define CONNECTPORT "line-port"

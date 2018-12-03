@@ -11,6 +11,9 @@
 #include <netinet/in.h>
 #include <string>
 #include <ctime>
+#include "list.hpp"
+#include <json.h>
+#include "netstruct.hpp"
 
 #define CALLBACKOK "ok"
 #define CALLBACKERR "err"
@@ -25,11 +28,17 @@
 //#define LOGIN 0
 //#define COMMAND 1
 
+
+
+
+// 用户信息
 struct user_config {
 	int user_id ;
 	char user_user[256];
 	char user_password[256];
 };
+
+// 帐号信息
 struct accountinfo {
 	char title[TITLESIZE] = {'\0'};
 	char company[COMPANYSIZE]  = {'\0'};
@@ -46,9 +55,75 @@ struct accountinfo {
 };
 
 
-enum type: uint16_t {show,put,del,search,quit,result, ty_zero} ;
+#define FIELDNAMESIZE 256
+#define VALUESIZE 256
+// 字段信息
+struct Field {
+	std::string fieldName ;
+	std::string value ;
+	bool secret ; // 是否加密
+	
+	Field() = default ;
+	Field(const Field& f) {
+		fieldName = f.fieldName ;
+		value = f.value ;
+		secret = f.secret ;
+	}
+	
+	//判断字段是否需要加密
+	bool isSecret(const char* word) {
+		if (strlen(word) > 3 && word[0] == '*' && word[1] == '"' && word[strlen(word) - 1] == '"') {
+			return true ;
+		}
+		return false ;
+	}
+	
+	Field(std::string f, std::string v, bool s) : fieldName(f), value(v), secret(s) {}
+	
+	Field(std::string s, std::string is) { // is:隔离符号
+		std::string::size_type mdx = s.find_first_of(is, 0) ; // 切割位置
+		fieldName = s.substr(0, mdx) ;
+		std::string v = s.substr(mdx + 1) ;
+		secret = isSecret(v.c_str()) ; // 判断是否加密
+		if (secret) {
+			v.erase(0, 2) ;
+			v.erase(v.size() - 1) ;
+		}
+		value = v ;
+	}
+	
+	bool operator=(const Field& field) {
+		if (fieldName == field.fieldName && value == field.value) {
+			return true ;
+		} else {
+			return false ;
+		}
+	}
+};
+
+
+struct Account {
+	unsigned int aid ;
+	bfzq::List<Field> list ;
+	Account() = default ;
+	Account(const Account& a) {
+		aid = a.aid ;
+		list = a.list ;
+	}
+};
+
+struct dbdata {
+	unsigned int aid ;
+	std::string fieldName ;
+	std::string value ;
+	bool secret ; // 是否加密
+	dbdata(unsigned int a, std::string f, std::string v, bool s) : aid(a), fieldName(f), value(v), secret(s) {}
+};
+
+
+enum type: uint16_t {show,put,del,search,quit,result, ty_zero} ; // 命令模式
 enum subtype: uint16_t {all,tittle,company,account,nickname,sub_zero} ;
-const char type_s[5][7] = {"show","put","del","search","quit"} ;
+const char type_s[6][7] = {"show","put","del","search","quit","result"} ;
 const char subtype_s[5][9] = {"all","title","company","account","nickname"} ;
 
 /*
@@ -58,74 +133,39 @@ const char subtype_s[5][9] = {"all","title","company","account","nickname"} ;
  *	del no:1
  */
 struct command {
-	enum type local_type; // 0 show, 1 put , 2 search
-	enum subtype local_sutype;
-	char content[CONTENTSIZE] ; //a content what used by 'show' or 'search'
-	struct accountinfo ai ; // used by put
+	enum type cmd; // 命令模式
+	bfzq::List<Field> list ;
 	
-	// 拆除函数
-	uint8_t* disassemble() {
-		static uint8_t disass[1030] ; // 拆解存储器
-		*((uint16_t*)disass) = htons(local_type) ;
-		*((uint16_t*)(disass + 2)) = htons(local_sutype) ;
-		memcpy(disass + 4, content, CONTENTSIZE) ;
-		memcpy(disass + 4 + CONTENTSIZE, (uint8_t*)ai.title, TITLESIZE) ;
-		memcpy(disass + 4 + CONTENTSIZE + TITLESIZE, (uint8_t*)ai.company, COMPANYSIZE) ;
-		memcpy(disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE, (uint8_t*)ai.account, ACCOUNTSIZE) ;
-		memcpy(disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE + ACCOUNTSIZE, (uint8_t*)ai.passwd, PASSWDSIZE) ;
-		memcpy(disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE + ACCOUNTSIZE + PASSWDSIZE, (uint8_t*)ai.nickname, NICKNAMESIZE) ;
-		return disass ;
-	}
-	
-	// 装配函数
-	void assemble(uint8_t* disass) {
-		local_type = (type)ntohs(*((uint16_t*)disass)) ;
-		local_sutype = (subtype)ntohs(*((uint16_t*)(disass + 2))) ;
-		memcpy(content,disass + 4, CONTENTSIZE) ;
-		memcpy(ai.title, disass + 4 + CONTENTSIZE, TITLESIZE) ;
-		memcpy(ai.company, disass + 4 + CONTENTSIZE + TITLESIZE, COMPANYSIZE) ;
-		memcpy(ai.account, disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE, ACCOUNTSIZE) ;
-		memcpy(ai.passwd, disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE + ACCOUNTSIZE, PASSWDSIZE) ;
-		memcpy(ai.nickname, disass + 4 + CONTENTSIZE + TITLESIZE + COMPANYSIZE + ACCOUNTSIZE + PASSWDSIZE, NICKNAMESIZE) ;
+	bool assemble(std::string jsonstr) {
+		Json::Reader reader ;
+		Json::Value root ;
+		if (reader.parse(jsonstr, root)) {
+			cmd = (enum type)root[0].asUInt() ;
+			list = json_to_struct<Field,bfzq::List>(root[1].toStyledString(), [](bfzq::List<Field>& list, Json::Value value) {
+				
+			}) ;
+			return true ;
+		} else {
+			return false ;
+		}
+		
 	}
 	
 	void empty() {
-		ai.empty() ;
-		local_type = type::ty_zero ;
-		content[0] = '\0' ;
-		local_sutype = subtype::all ;
+		cmd = type::ty_zero ;
+		list.clean() ;
 	}
-	void gettype(char* ty) {
+	bool gettype(const char* ty) {
 		ushort i ;
-		for(i = 0; i < 5; i++) {
+		for(i = 0; i < 6; i++) {
 			if(0 == strcmp(type_s[i], ty)) {
-				local_type = (enum type)i;
+				cmd = (enum type)i;
+				return true ;
 				break ;
 			}
 		}
-		if (i == 5) local_type = type::ty_zero;
-	}
-	
-	
-// 重载操作符
-//	void operator =(char* ty) {
-//		for(ushort i = 0; i < 5; i++) {
-//			if(0 == strcmp(type_s[i], ty)) {
-//				type = (enum type)i;
-//			}
-//		}
-//		type = type::ty_zero;
-//	}
-	
-	void getsubtype(char* ty) {
-		ushort i ;
-		for(i = 0; i < 5; i++) {
-			if(0 == strcmp(subtype_s[i], ty)) {
-				local_sutype = (enum subtype)i;
-				break ;
-			}
-		}
-		if (i == 5) local_sutype = subtype::sub_zero;
+		if (i == 6) cmd = type::ty_zero;
+		return false ;
 	}
 };
 

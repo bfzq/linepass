@@ -7,7 +7,7 @@ INC_DIR := -I/usr/local/include/cryptopp
 
 CFLAGS := -Wall -std=c++11 $(INC_DIR)
 
-OBJ=mainprogram.o comline.o link.o threadpool.o logs.o linesecret.o secret.o list.o
+OBJ=mystring.o mainprogram.o comline.o link.o threadpool.o logs.o linesecret.o secret.o
 all:$(OBJ)
 %.o:%.cpp
 	$(CC) $(DEBUG) $(CFLAGS) -c $< -o $@

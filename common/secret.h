@@ -9,10 +9,7 @@ using namespace CryptoPP;
 //#pragma comment(lib, "cryptlib.lib" )
 
 std::string ECB_AESEncryptStr(std::string sKey, const char *plainText, size_t len);
-std::string ECB_AESDecryptStr(std::string sKey, uint8_t* cipherText);
-std::string ECB_AESDecryptSTR_1(std::string sKey, uint8_t* cipherText);
 std::string ECB_AESDecryptStr(std::string sKey, const char *cipherText);
-std::string ECB_AESDecryptStr(std::string sKey, std::string cipherText);
 std::string CBC_AESEncryptStr(std::string sKey, std::string sIV, const char *plainText);
 std::string CBC_AESDecryptStr(std::string sKey, std::string sIV, const char *cipherText);
 

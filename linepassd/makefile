@@ -13,19 +13,22 @@ endif
 COMMON = ../common
 INC_COMMON = -I$(COMMON)
 INC_CRYPTO = -I/usr/local/include/cryptopp
+INC_JSON = -I/usr/local/include/json
+
 LIB_CRYPTO = /usr/local/lib/libcryptopp.a
+LIB_JSON = /usr/local/lib/libjsoncpp.a
 CPP_COMMON = -L$(COMMON)
 
 VPATH = $(CPP_COMMON)
 
 MAKE = make
 
-CFLAGS = -Wall -std=c++11 $(INC_CRYPTO) $(MYSQL_INCLUDE) $(INC_COMMON)
+CFLAGS = -Wall -std=c++11 $(INC_CRYPTO) $(MYSQL_INCLUDE) $(INC_COMMON) $(INC_JSON)
 LFLAGS = -ldl -lpthread --std=c++11 
-LIBLAGS = $(LIB_CRYPTO) $(MYSQL_LIB)
+LIBLAGS = $(LIB_CRYPTO) $(MYSQL_LIB) $(LIB_JSON)
 
-OBJECTS = main.o lineprogram.o mysqlc.o mysqlcpool.o
-COMOBJ = $(COMMON)/mainprogram.o $(COMMON)/comline.o $(COMMON)/linesecret.o $(COMMON)/threadpool.o $(COMMON)/secret.o $(COMMON)/link.o
+OBJECTS = main.o lineprogram.o mysqlc.o mysqlcpool.o granalysis.o
+COMOBJ = $(COMMON)/mystring.o $(COMMON)/mainprogram.o $(COMMON)/comline.o $(COMMON)/linesecret.o $(COMMON)/threadpool.o $(COMMON)/secret.o $(COMMON)/link.o
 
 $(PROGRAM):$(OBJECTS) $(COMOBJ)
 	$(CC) $(LFLAGS) -o $(PROGRAM) $(OBJECTS) $(COMOBJ) $(LIBLAGS)

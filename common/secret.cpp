@@ -1,5 +1,14 @@
 #include "secret.h"
 
+//unsigned int ustrlen(const uint8_t* ustr) {
+//	unsigned int i = 0;
+//	while ('\0' != ustr[i]) {
+//		printf("#%d# %x-%c\n", i,ustr[i],ustr[i]) ;
+//		i++ ;
+//	}
+//	printf("ustrlen: %u\n", i) ;
+//	return i ;
+//}
 
 std::string ECB_AESEncryptStr(std::string sKey, const char *plainText, size_t len)
 {
@@ -22,16 +31,15 @@ std::string ECB_AESEncryptStr(std::string sKey, const char *plainText, size_t le
     return outstr;
 }
 
-std::string ECB_AESDecryptStr(std::string sKey, const char *cipherText)
+std::string ECB_AESDecryptStr(std::string sKey, const char* cipherText)
 {
     std::string outstr;
-
     //填key    
     SecByteBlock key(AES::MAX_KEYLENGTH);
     memset(key, 0x30, key.size());
     sKey.size() <= AES::MAX_KEYLENGTH ? memcpy(key, sKey.c_str(), sKey.size()) : memcpy(key, sKey.c_str(), AES::MAX_KEYLENGTH);
 
-    ECB_Mode<AES >::Decryption ecbDecryption((byte *)key, AES::MAX_KEYLENGTH);
+    ECB_Mode<AES>::Decryption ecbDecryption((byte *)key, AES::MAX_KEYLENGTH);
 
     HexDecoder decryptor(new StreamTransformationFilter(ecbDecryption, new StringSink(outstr)));
     decryptor.Put((byte *)cipherText, strlen(cipherText));
@@ -39,6 +47,8 @@ std::string ECB_AESDecryptStr(std::string sKey, const char *cipherText)
 
     return outstr;
 }
+
+
 
 std::string CBC_AESEncryptStr(std::string sKey, std::string sIV, const char *plainText)
 {
@@ -64,6 +74,7 @@ std::string CBC_AESEncryptStr(std::string sKey, std::string sIV, const char *pla
 
     return outstr;
 }
+
 
 std::string CBC_AESDecryptStr(std::string sKey, std::string sIV, const char *cipherText)
 {

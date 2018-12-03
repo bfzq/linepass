@@ -86,16 +86,18 @@ bool LineProgram::certify(struct user_config* uc, uint8_t* buf) {
 }
 
 
-void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t *cmd) {
-	struct command comma;
-	comma.assemble(cmd) ;
-	switch (comma.local_type) {
+void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t *cmdStr) {
+	if (!granalysis.morphology((const char*)cmdStr)) {
+		// <#语法解析错误处理部分#>
+	}
+	struct command cmd = granalysis.getStructCmd();
+	switch (cmd.cmd) {
 		case type::put:{
-			putAccountToServer(comma, uc, client_socket) ;
+			putAccountToServer(cmd, uc, client_socket) ;
 			break;
 		}
 		case type::show:{
-			showUserAccount(comma, uc, client_socket) ;
+			showUserAccount(cmd, uc, client_socket) ;
 			break;
 		}
 		default:
@@ -117,9 +119,10 @@ void LineProgram::tasks() {
 		uint32_t byte = 0; // 返回长度
 		uint8_t buf[PROTO_HEAD_SIZE] ; // 缓存
 		while ((byte = recv(client_socket, buf, PROTO_HEAD_SIZE, 0)) > 0) { // 获取到客户端的数据 buf
-			struct proto_head ph ;
+			struct proto_head ph ; // 数据包头
 			if(!link->parser(buf, byte, &ph)) continue;
-			if (ph.len > PROTO_HEAD_SIZE) {
+			if (ph.len > PROTO_HEAD_SIZE) {  // 检查数据体长度是否合法
+				// 获取数据体
 				uint32_t datalen = ph.len - PROTO_HEAD_SIZE ;
 				int8_t* data = (int8_t*)malloc(sizeof(int8_t) * (datalen + 1)) ;
 				if ((byte = recv(client_socket, data, datalen, 0)) <= 0) {
@@ -129,7 +132,7 @@ void LineProgram::tasks() {
 				data[datalen] = '\0' ;
 				
 				/*
-				 *	解密数据包
+				 *	解密数据体
 				 */
 				uint8_t* unsafeData = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
 				
@@ -158,6 +161,7 @@ void LineProgram::tasks() {
 						break;
 					}
 					case COMMAND:
+						// 处理命令信息
 						commandWork(&uc,client_socket,unsafeData) ;
 						break ;
 					default:
@@ -197,44 +201,30 @@ void LineProgram::putAccountToServer(struct command comma, struct user_config *u
 	try {
 		local_mysql->begin() ;
 		
-		// 查询在数据库中服务商是否已经存在
-		std::string sql_select_company = "select id from company where ps_name = '"
-		+ std::string(comma.ai.company)
-		+ "'" ;
-		int psid = 0 ;
-		local_mysql->query(sql_select_company.c_str(), [&psid](MYSQL_ROW row){
-			psid = atoi(row[0]) ;
-			return true ;
-		}, [&psid](){
-			psid = -1 ;
+		//拼装添加帐号语句
+		std::string insert_accounts = "insert into accounts(usersid,field_numbers) value("
+		+ std::to_string(uc->user_id) + "," + std::to_string(comma.list.size()) + ")";
+		local_mysql->execute(insert_accounts.c_str(),nullptr) ;
+		
+		// 拼装帐号详情语句
+		std::string insert_sql = "insert into field_list(accountsid,field,value,secert) values" ;
+		comma.list.foreach([&insert_sql](Field field) {
+			std::string secretstr ;
+			if (field.secret) {
+				secretstr = ECB_AESEncryptStr(aesDbKey, field.value.c_str(), field.value.size()) ;
+			} else {
+				secretstr = field.value ;
+			}
+			insert_sql = insert_sql + "(last_insert_id(),'"
+			+ field.fieldName + "','" + secretstr + "'," + std::to_string(field.secret) + "),";
 		}) ;
 		
-		// 如果不存在则新增
-		if (psid < 0) {
-			std::string sql_company = "insert into company(ps_name) value('"
-			+ std::string(comma.ai.company)
-			+ "')" ;
-			local_mysql->execute(sql_company.c_str(),nullptr) ;
-		}
 		
-		// 添加用户账户
-		std::string sql_account = "insert into accounts(user_id,company_id,title,account,passwd,nickname) value("
-		+ std::to_string((*uc).user_id)
-		+ ","
-		+ ((psid < 0) ? "last_insert_id()" : std::to_string(psid))
-		+ ",'"
-		+ std::string(comma.ai.title)
-		+ "' , '"
-		+ std::string(comma.ai.account)
-		+ "' , '"
-		+ ECB_AESEncryptStr(aesDbKey, comma.ai.passwd, strlen(comma.ai.passwd))
-		+ "' , '"
-		+ std::string(comma.ai.nickname)
-		+ "')";
+		insert_sql.erase(insert_sql.length() - 1) ;
 		
-		local_mysql->execute(sql_account.c_str(), nullptr) ;
+		//execute insert_sql
+		local_mysql->execute(insert_sql.c_str(),nullptr) ;
 		local_mysql->commit() ;
-		
 		
 		/*
 		 * 返回客户信息, ok
@@ -259,49 +249,93 @@ void LineProgram::showUserAccount(struct command comma, struct user_config* uc, 
 	Mysqlc* local_mysql = mp->getMysqlCon() ;
 	try {
 		
-		// 查询用户账户SQL语句
-		std::string sql = "select a.title,a.account,a.passwd,a.nickname,c.ps_name as company from accounts as a left join company as c on a.company_id=c.id where user_id = "
-		+ std::to_string((*uc).user_id);
-		if ( 0 != strlen(comma.ai.title) ) {
-			sql = sql + " and a.title like '%" + std::string(comma.ai.title) + "%' " ;
-		}
-		if ( 0 != strlen(comma.ai.account) ) {
-			sql = sql + " and a.account like '%" + std::string(comma.ai.account) + "%' " ;
-		}
-		if ( 0 != strlen(comma.ai.nickname) ) {
-			sql = sql + " and a.nickname like '%" + std::string(comma.ai.nickname) + "%' " ;
-		}
-		if ( 0 != strlen(comma.ai.company) ) {
-			sql = sql + " and c.ps_name like '%" + std::string(comma.ai.company) + "%' " ;
-		}
+		bfzq::List<dbdata> tmpResult ;
+		bfzq::List<Account> result ;
 		
+//		 查询用户账户SQL语句
+		std::string select_sql = "select accountsid,field,value,secert from `field_list` where accountsid in (select distinct f.`accountsid` from `accounts` as a left join `field_list` as f on a.`id` = f.`accountsid` where a.`usersid` = " + std::to_string(uc->user_id) + " and ";
+		comma.list.foreach([&select_sql](Field field) {
+			if (field.fieldName == "f") {
+				select_sql = select_sql + " f.`field` like '%" + field.value + "%' or " ;
+			} else if (field.fieldName == "v") {
+				select_sql = select_sql + " f.`value` like '%" + field.value + "%' or " ;
+			}
+		}) ;
+		select_sql.erase(select_sql.length() - 4) ;
+		select_sql = select_sql + ") order by accountsid" ;
 		
-		local_mysql->query(sql.c_str(), [&](MYSQL_ROW row) {
-			struct command cmd ;
-			cmd.local_type = result ;
-			if(NULL != row[0]) memcpy(cmd.ai.title, row[0], strlen(row[0])) ;
-			if(NULL != row[1]) memcpy(cmd.ai.account, row[1], strlen(row[1])) ;
-			if(NULL != row[2]) memcpy(cmd.ai.passwd, ECB_AESDecryptStr(aesDbKey, row[2]).c_str(), ECB_AESDecryptStr(aesDbKey, row[2]).size()) ;
-			if(NULL != row[3]) memcpy(cmd.ai.nickname, row[3], strlen(row[3])) ;
-			if(NULL != row[4]) memcpy(cmd.ai.company, row[4], strlen(row[4])) ;
+		// 查询数据，并缓存..
+		int mark = -1 ; // 标记帐号
+		local_mysql->query(select_sql.c_str(), [&tmpResult, &result, &mark] (MYSQL_ROW row){
+			int id = 0;
+			std::string f,v ;
+			bool s = false;
+			(NULL != row[3])? s = atoi(row[3]) : false ;
+			(NULL != row[0])? id = atoi(row[0]) : 0 ;
+			(NULL != row[1])? f = row[1] : nullptr ;
+			if (s) {
+				(NULL != row[2])? v = ECB_AESDecryptStr(aesDbKey, row[2]) : nullptr ;
+			} else {
+				(NULL != row[2])? v = row[2] : nullptr ;
+			}
 			
-			char* tmp_c = (char*)malloc(sizeof(cmd)) ;
-			memcpy(tmp_c, (char*)&cmd, sizeof(cmd)) ;
 			
-			// 返回客户账户数据
-			this->feedBack(client_socket, RESULT, tmp_c, sizeof(cmd)) ;
+			if (mark == -1) mark = id ;
+		reput:
+			if (id == mark) {
+				tmpResult.Insert(dbdata(id, f, v, s)) ;
+			} else {
+				Account a ;
+				tmpResult.foreach([&a](dbdata data) {
+					a.aid = data.aid ;
+					a.list.Insert(Field(data.fieldName, data.value, data.secret)) ;
+				}) ;
+				result.Insert(a) ;
+				mark = id ;
+				tmpResult.clean() ;
+				goto reput;
+			}
 			return true ;
 		}, nullptr) ;
+
+		if (!tmpResult.isEmpty()) {
+			Account a ;
+			tmpResult.foreach([&a](dbdata data) {
+				a.aid = data.aid ;
+				a.list.Insert(Field(data.fieldName, data.value, data.secret)) ;
+			}) ;
+			result.Insert(a) ;
+		}
+		// ..查询数据，并缓存
+		
+		// 数据json化
+		Json::Value json ;
+		result.foreach([&json](Account account) {
+			
+			Json::Value item = struct_to_json_struct<Field,bfzq::List>(account.list,[](std::vector<std::string>& item, Field f){
+				item.push_back(f.fieldName) ;
+				item.push_back(f.value) ;
+				item.push_back(f.secret? "1" : "0") ;
+			}) ;
+			
+			json[std::to_string(account.aid)] = item ;
+		}) ;
+		
+		
+		
+		
 		
 		/*
 		 * 返回客户账户数据结束
 		 */
-		feedBack(client_socket, DONE, "", 0) ;
-		
+		std::string jsonstr = json.toStyledString() ;
+		feedBack(client_socket, RESULT, jsonstr.c_str(), jsonstr.size()) ;
+	
 	} catch(MysqlcException &me) {
 		me.what() ;
 		feedBack(client_socket, MESSAGE, "error", strlen("error")) ;
 	}
+	feedBack(client_socket, DONE, "", 0) ;
 	mp->backMysqlCon(local_mysql) ;
 	local_mysql = nullptr ;
 }
@@ -309,18 +343,13 @@ void LineProgram::showUserAccount(struct command comma, struct user_config* uc, 
 
 
 
-
+// 返回数据
 void LineProgram::feedBack(int client_socket, Server server, const char* unsafedata, size_t datasize) {
-	// 返回报文加密
 	std::string safedata = ECB_AESEncryptStr(aesKey, unsafedata, datasize) ;
-	
-	struct proto_msg pm ;
-	pm.server = server ;
-	pm.data = (int8_t*)safedata.c_str() ;
-	pm.len = safedata.size() ;
+	struct proto_msg mg(server, (uint8_t*)safedata.c_str(), safedata.size()) ;
 	
 	uint32_t len ; // 网络报文长度
-	uint8_t* pdata = link->encode(pm, len) ;
+	uint8_t* pdata = link->encode(mg, len) ;
 	
 	send(client_socket, pdata, len, 0) ;
 }
