@@ -29,9 +29,9 @@ namespace bfzq {
 	template <typename T>
 	class List {
 	public:
-		List() = default;
-		List(const List&) ;
-		~List() ;
+		List<T>() = default;
+		List<T>(const List&) ;
+		~List<T>() ;
 	public:
 		void Insert(T) ;
 		bool Delete(T&) ;
@@ -39,7 +39,10 @@ namespace bfzq {
 		void foreach(std::function<void(T)>) const;
 		unsigned int size() ;
 		void clean() ;
-		
+		bool isEmpty() ;
+	public:
+		List<T>& operator+(const List<T>&) ;
+		List<T>& operator=(const List<T>&) ;
 	private:
 		Node<T>* _head = nullptr;
 		Node<T>* _tail = nullptr;
@@ -48,14 +51,14 @@ namespace bfzq {
 	} ;
 	
 	template <typename T>
-	List<T>::List(const List& list) {
+	List<T>::List(const List<T>& list) {
 		list.foreach([this](T t) {
 			Insert(t) ;
 		}) ;
 	}
 	
 	template <typename T>
-	List<T>::~List() {
+	List<T>::~List<T>() {
 		clean() ;
 	}
 	
@@ -141,6 +144,32 @@ namespace bfzq {
 			}
 		}
 		_head = nullptr ;
+		_length = 0 ;
+	}
+	
+	template <typename T>
+	bool List<T>::isEmpty() {
+		if (_length != 0) {
+			return false ;
+		} else {
+			return true ;
+		}
+	}
+	template <typename T>
+	List<T>& List<T>::operator+(const List& list) {
+		list.foreach([this](T t) {
+			Insert(t) ;
+		}) ;
+		return *this ;
+	}
+	
+	template <typename T>
+	List<T>& List<T>::operator=(const List& list) {
+		clean() ;
+		list.foreach([this](T t) {
+			Insert(t) ;
+		}) ;
+		return *this ;
 	}
 }
 
