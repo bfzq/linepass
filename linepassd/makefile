@@ -13,7 +13,6 @@ endif
 COMMON = ../common
 INC_COMMON = -I$(COMMON)
 INC_CRYPTO = -I/usr/local/include/cryptopp
-INC_JSON = -I/usr/local/include/json
 
 LIB_CRYPTO = /usr/local/lib/libcryptopp.a
 LIB_JSON = /usr/local/lib/libjsoncpp.a
@@ -23,7 +22,7 @@ VPATH = $(CPP_COMMON)
 
 MAKE = make
 
-CFLAGS = -Wall -std=c++11 $(INC_CRYPTO) $(MYSQL_INCLUDE) $(INC_COMMON) $(INC_JSON)
+CFLAGS = -Wall -std=c++11 $(INC_CRYPTO) $(MYSQL_INCLUDE) $(INC_COMMON)
 LFLAGS = -ldl -lpthread --std=c++11 
 LIBLAGS = $(LIB_CRYPTO) $(MYSQL_LIB) $(LIB_JSON)
 

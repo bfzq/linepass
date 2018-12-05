@@ -10,13 +10,13 @@
 #include "comprogram.hpp"
 
 
-#include "command.hpp"
-#include "list.hpp"
-#include "struct.h"
-#include "netstruct.hpp"
-#include <json.h>
-#include <vector>
-#include "secret.h"
+//#include "command.hpp"
+//#include "list.hpp"
+//#include "struct.h"
+//#include "netstruct.hpp"
+//#include <json/json.h>
+//#include <vector>
+//#include "secret.h"
 
 int main(int argc,char* argv[]) {
 	

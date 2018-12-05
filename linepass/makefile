@@ -7,7 +7,7 @@ COMMON = ../common
 INC_COMMON = -I$(COMMON)
 MAKE = make
 
-INC_DIR = -I$(COMMON) -I/usr/local/include/cryptopp -I/usr/local/include/json
+INC_DIR = -I$(COMMON) -I/usr/local/include/cryptopp
 LIB_DIR = /usr/local/lib/libcryptopp.a /usr/local/lib/libjsoncpp.a
 
 
