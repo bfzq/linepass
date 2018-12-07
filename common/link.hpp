@@ -22,6 +22,7 @@
 
 
 #include "threadpool.h"
+//#include "global.cpp"
 #include <functional>
 
 
@@ -78,7 +79,7 @@ class LineLink {
 public:
 	enum JOB{SERVER,CLIENT}; // 服务器角色 or 客户端角色
 private:
-	fivestar::ThreadPool threadPool; // 多线程
+    fivestar::ThreadPool threadPool; // 多线程
 	int local_socket ; // 本地套接字和客户端套接字
 	struct sockaddr_in server_addr, client_addr; // #include <netinet/in.h> 网络地址结构体
 	JOB job ;

@@ -82,6 +82,8 @@ bool Command::input() {
 		}
 		if (';' == s[s.length() - 1]) {
 			isEnd = true ;
+		} else if(s.empty()) {
+			std::cout << "# " ;
 		} else {
 			std::cout << "> " ;
 		}

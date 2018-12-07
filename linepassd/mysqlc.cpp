@@ -17,7 +17,7 @@ unsigned int MysqlcException::errorNo() const {
 
 
 Mysqlc::Mysqlc() {
-    	mysql_thread_init() ;
+    mysql_thread_init() ;
 	_mysql = mysql_init(nullptr);
 }
 
@@ -36,6 +36,18 @@ bool Mysqlc::connect(const char* host, const char* user, const char* password, c
 		throw MysqlcException(errNo(), (char*)error()) ;
 	}
 	return true;
+}
+
+bool Mysqlc::reConnect() {
+    if (_mysql) {
+        if (!mysql_reset_connection(_mysql)) {
+            return true ;
+        } else {
+            throw MysqlcException(errNo(), (char*)error()) ;
+        }
+    } else {
+        return false ;
+    }
 }
 
 bool Mysqlc::disConnect() {
@@ -121,6 +133,23 @@ bool Mysqlc::use(const char* dbname) {
 		throw MysqlcException(errNo(), (char*)error()) ;
 	}
 	return true ;
+}
+
+bool Mysqlc::setOption(enum mysql_option option, const void *arg) {
+    if(mysql_options(_mysql, option, arg) != 0) {
+        throw MysqlcException(errNo(), (char*)error()) ;
+    } else {
+        return true ;
+    }
+}
+
+
+bool Mysqlc::alive() {
+    if (!mysql_ping(_mysql)) {
+        return true ;
+    } else {
+        return false ;
+    }
 }
 
 bool Mysqlc::autoCommit(bool mode) {

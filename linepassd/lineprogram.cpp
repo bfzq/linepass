@@ -31,6 +31,7 @@ LineProgram::~LineProgram() {
 }
 
 int LineProgram::main(int argc, char **argv) {
+    __mysql_library_init__
 	initParameter(argc, argv) ;
 	if (cl->haveHelp()) {
 		cl->printHelpInfo() ;
@@ -41,6 +42,7 @@ int LineProgram::main(int argc, char **argv) {
 	initMysqlPool() ;
 	hideArg(argc,argv,"mysql-passwd") ; // 隐藏密码
 	tasks() ;
+    __mysql_library_end__
 	return 0 ;
 }
 

@@ -15,6 +15,7 @@
 #include <string>
 #include "stdlib.h"
 #include "mysqlc.h"
+#include "threadpool.h"
 
 
 //#define MYSQLHOST
@@ -24,6 +25,7 @@
 #define MYSQLUSER "mysql-user"
 #define MYSQLPASSWD "mysql-passwd"
 #define MYSQLDB "mysql-db"
+#define MYSQLBEATTIME "mysql-beat-time"
 
 struct mysql_item {
 	bool status ; // true - using, false - not use
@@ -32,8 +34,21 @@ struct mysql_item {
 		status = false ;
 		mc = m ;
 	}
+    
+    mysql_item& operator=(const mysql_item& mi) {
+        status = mi.status ;
+        mc = mi.mc ;
+        return *this ;
+    }
+    
 	void setStatus(bool stat) {
 		status = stat ;
+	}
+	~mysql_item() {
+		if(mc != nullptr) {
+			delete mc ;
+			mc = nullptr ;
+		}
 	}
 };
 
@@ -43,7 +58,8 @@ struct mysql_config {
 	std::string passwd ;
 	std::string db ;
 	int port ;
-	mysql_config(){}
+    unsigned int heart_time ;
+	mysql_config() = default ;
 	mysql_config(std::map<std::string, std::string>* m) {
 		init(m) ;
 	}
@@ -53,17 +69,24 @@ struct mysql_config {
 		user = (*m)[MYSQLUSER] ;
 		passwd = (*m)[MYSQLPASSWD] ;
 		db = (*m)[MYSQLDB] ;
+        heart_time = atoi((*m)[MYSQLBEATTIME].c_str()) ;
 	}
 };
 
 class MysqlcPool {
 private:
-	struct mysql_item* pool ;
+    fivestar::ThreadPool thread ;
+	struct mysql_item** pool ;
 	uint16_t num ;
+    unsigned int _heart_time = 3;
 private:
 	void uinit() ;
+    /*the heart beat of connections*/
+    void keepAlive() ;
 public:
-	MysqlcPool() ;
+
+	MysqlcPool() = default;
+	/* arg1 is mysql info, arg2 is num of mysql connections */
 	MysqlcPool(mysql_config, uint16_t) ;
 	~MysqlcPool() ;
 public:

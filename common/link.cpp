@@ -14,7 +14,7 @@ LineLink::LineLink() {
 }
 
 LineLink::~LineLink() {
-	
+    threadPool.stop() ;
 }
 
 

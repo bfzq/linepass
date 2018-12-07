@@ -47,7 +47,7 @@ private:
 	struct server_config sc ; // 系统参数
 	LineSecret* ls ; // 加密
 	LineLink* link ; // 网络
-	MysqlcPool* mp ; // mysql连接池
+    MysqlcPool* mp ; // mysql连接池
 	struct mysql_config mc ; // mysql 连接信息
 	Granalysis granalysis ; // 语法解析器
 public:

@@ -10,7 +10,7 @@
 #define list_hpp
 
 #include <stdio.h>
-
+#include <type_traits>
 #include <functional>
 
 
@@ -23,6 +23,13 @@ namespace bfzq {
 		Node<V>* per ;
 		Node<V>* next ;
 		Node(V v) : v(v),per(nullptr),next(nullptr) {}
+        // ~Node() {
+        //     /*If v is a pointer, delete it.*/
+        //     if (std::is_pointer<V>::value) {
+        //         delete v ;
+        //         v = nullptr ;
+        //     }
+        // }
 	};
 	
 	
@@ -37,12 +44,14 @@ namespace bfzq {
 		bool Delete(T&) ;
 		bool Delete(unsigned int index) ;
 		void foreach(std::function<void(T)>) const;
+//        T getItem
 		unsigned int size() ;
 		void clean() ;
 		bool isEmpty() ;
 	public:
 		List<T>& operator+(const List<T>&) ;
 		List<T>& operator=(const List<T>&) ;
+        T operator[](unsigned int) ;
 	private:
 		Node<T>* _head = nullptr;
 		Node<T>* _tail = nullptr;
@@ -117,7 +126,7 @@ namespace bfzq {
 	}
 	
 	template <typename T>
-	void List<T>::foreach(std::function<void(T)> func) const{
+	void List<T>::foreach(std::function<void(T)> func) const {
 		Node<T>* node = _head ;
 		if (!node) return ;
 		do {
@@ -171,6 +180,15 @@ namespace bfzq {
 		}) ;
 		return *this ;
 	}
+    
+    template <typename T>
+    T List<T>::operator[](unsigned int idx) {
+        T t ;
+        foreach([&t](T _t) {
+            t = _t ;
+        }) ;
+        return t ;
+    }
 }
 
 #endif /* list_hpp */

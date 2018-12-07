@@ -7,8 +7,8 @@
 #include <functional>
 #include <cstring>
 
-#define _mysql_library_init mysql_library_init(0, NULL, NULL);
-#define _mysql_library_end mysql_library_end();
+#define __mysql_library_init__ mysql_library_init(0, NULL, NULL);
+#define __mysql_library_end__ mysql_library_end();
 
 
 
@@ -33,11 +33,15 @@ private:
 	MYSQL* _mysql;
 public:
 	bool connect(const char* host, const char* user, const char* password, const char* db, int port); // 连接数据库
+    bool reConnect() ;
 	bool disConnect(); // 断开连接数据库
-	bool setCharacterSet(const char* csname) ; // 设置字符集
-	bool createDataBase(const char* dbname) ; // 新建库
-	bool dropDataBase(const char* dbname) ; // 删除库
-	bool use(const char* dbname); // 切换库
+    bool setOption(enum mysql_option option, const void *arg) ; // 设置参数
+    bool alive() ; // 确认连接存活
+public:
+    bool setCharacterSet(const char* csname) ; // 设置字符集
+    bool createDataBase(const char* dbname) ; // 新建库
+    bool dropDataBase(const char* dbname) ; // 删除库
+    bool use(const char* dbname); // 切换库
 public:
 	bool autoCommit(bool) ; // 自动提交
 	bool begin() ; // 开启事务
