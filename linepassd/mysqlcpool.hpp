@@ -35,20 +35,14 @@ struct mysql_item {
 		mc = m ;
 	}
     
-    mysql_item& operator=(const mysql_item& mi) {
-        status = mi.status ;
-        mc = mi.mc ;
-        return *this ;
-    }
+    //mysql_item& operator=(const mysql_item& mi) {
+    //    status = mi.status ;
+    //    mc = mi.mc ;
+    //    return *this ;
+    //}
     
 	void setStatus(bool stat) {
 		status = stat ;
-	}
-	~mysql_item() {
-		if(mc != nullptr) {
-			delete mc ;
-			mc = nullptr ;
-		}
 	}
 };
 
@@ -76,8 +70,7 @@ struct mysql_config {
 class MysqlcPool {
 private:
     fivestar::ThreadPool thread ;
-	struct mysql_item** pool ;
-	uint16_t num ;
+	std::vector<mysql_item> pool ;
     unsigned int _heart_time = 3;
 private:
 	void uinit() ;

@@ -20,8 +20,6 @@ MysqlcPool::~MysqlcPool() {
 }
 
 void MysqlcPool::init(mysql_config config, uint16_t num) {
-	pool = (mysql_item**)malloc(sizeof(mysql_item*) * num) ;
-	this->num = num ;
     _heart_time = config.heart_time ;
     
     thread.setMaxQueueSize(3) ;
@@ -29,31 +27,35 @@ void MysqlcPool::init(mysql_config config, uint16_t num) {
     
 	for (uint16_t i = 0; i < num; i++) {
 		Mysqlc* mc = new Mysqlc() ;
-		mc->connect(config.host.c_str(), config.user.c_str(), config.passwd.c_str(), config.db.c_str(), config.port) ;
-		mc->setCharacterSet("utf8mb4") ;
-		struct mysql_item* mi = new mysql_item(mc);
-		pool[i] = mi ;
+		try {
+			mc->connect(config.host.c_str(), config.user.c_str(), config.passwd.c_str(), config.db.c_str(), config.port) ;
+			mc->setCharacterSet("utf8mb4") ;
+			struct mysql_item mi(mc);
+			pool.push_back(mi) ;
+		} catch (MysqlcException &mc) {
+			mc.what() ;
+		}
 	}
-//    printf("%p,%p\n",pool,pool[0]->mc) ;
     keepAlive() ;
 }
 
 void MysqlcPool::uinit() {
-    for (int i = 0; i < num; i++) {
-        free(pool[i]) ;
+    for (int i = 0; i < pool.size(); i++) {
+        delete pool[i].mc ;
+	pool[i].mc = nullptr ;
     }
-	free(pool) ;
-    pool = nullptr ;
+//	free(pool) ;
+//    pool = nullptr ;
 }
 
 void MysqlcPool::keepAlive() {
     thread.run([this](){
         while (true) {
             std::this_thread::sleep_for(std::chrono::seconds(_heart_time)) ;
-            for(unsigned int i = 0; i < num; i++) {
-                mysql_item* mi = pool[i] ;
-                if (mi->status == false) {
-                    Mysqlc* mc = pool[i]->mc ;
+            for(unsigned int i = 0; i < pool.size(); i++) {
+                mysql_item mi = pool[i] ;
+                if (mi.status == false) {
+                    Mysqlc* mc = pool[i].mc ;
                     if (!mc->alive()) mc->reConnect() ;
                 }
             }
@@ -62,10 +64,10 @@ void MysqlcPool::keepAlive() {
 }
 
 Mysqlc* MysqlcPool::getMysqlCon() {
-	for (uint16_t i = 0; i < num; i++) {
-		if (pool[i]->status == false) {
-			pool[i]->status = true ;
-			return pool[i]->mc ;
+	for (uint16_t i = 0; i < pool.size(); i++) {
+		if (pool[i].status == false) {
+			pool[i].status = true ;
+			return pool[i].mc ;
 		}
 	}
 	return nullptr ;
@@ -73,9 +75,9 @@ Mysqlc* MysqlcPool::getMysqlCon() {
 
 
 void MysqlcPool::backMysqlCon(Mysqlc * mc) {
-	for (uint16_t i = 0; i < num; i++) {
-		if (pool[i]->mc == mc) {
-			pool[i]->status = false ;
+	for (uint16_t i = 0; i < pool.size(); i++) {
+		if (pool[i].mc == mc) {
+			pool[i].status = false ;
 		}
 	}
 }
