@@ -10,6 +10,7 @@
 #define struct_h
 #include <netinet/in.h>
 #include <string>
+#include <cstring>
 #include <ctime>
 #include "list.hpp"
 #include <json/json.h>
