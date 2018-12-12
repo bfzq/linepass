@@ -8,7 +8,7 @@ INC_COMMON = -I$(COMMON)
 MAKE = make
 
 INC_DIR = -I$(COMMON) -I/usr/local/include/cryptopp
-LIB_DIR = /usr/local/lib/libcryptopp.a /usr/local/lib/libjsoncpp.a
+LIB_DIR = -lcryptopp -ljsoncpp
 
 
 CFLAGS = -Wall -std=c++11 $(INC_DIR) $(INC_COMMON)
