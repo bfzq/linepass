@@ -7,7 +7,7 @@ ifeq ($(OS),Linux)
 	MYSQL_LIB_PATH = `mysql_config --variable=pkglibdir`
 else 
 	MYSQL_INCLUDE = -I/usr/local/mysql/include
-	MYSQL_LIB_PATH = /usr/local/mysql/lib/libmysqlclient.a
+	MYSQL_LIB_PATH = /usr/local/mysql/lib/
 endif
 
 COMMON = ../common
