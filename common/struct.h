@@ -122,9 +122,9 @@ struct dbdata {
 };
 
 
-enum type: uint16_t {show,put,del,search,quit,result, ty_zero} ; // 命令模式
+enum type: uint16_t {show,put,edit,del,search,quit,result, ty_zero} ; // 命令模式
 enum subtype: uint16_t {all,tittle,company,account,nickname,sub_zero} ;
-const char type_s[6][7] = {"show","put","del","search","quit","result"} ;
+const char type_s[7][7] = {"show","put","edit","del","search","quit","result"} ;
 const char subtype_s[5][9] = {"all","title","company","account","nickname"} ;
 
 /*
@@ -158,7 +158,7 @@ struct command {
 	}
 	bool gettype(const char* ty) {
 		ushort i ;
-		for(i = 0; i < 6; i++) {
+		for(i = 0; i < 7; i++) {
 			if(0 == strcmp(type_s[i], ty)) {
 				cmd = (enum type)i;
 				return true ;

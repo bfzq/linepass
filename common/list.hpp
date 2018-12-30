@@ -23,13 +23,6 @@ namespace bfzq {
 		Node<V>* per ;
 		Node<V>* next ;
 		Node(V v) : v(v),per(nullptr),next(nullptr) {}
-        // ~Node() {
-        //     /*If v is a pointer, delete it.*/
-        //     if (std::is_pointer<V>::value) {
-        //         delete v ;
-        //         v = nullptr ;
-        //     }
-        // }
 	};
 	
 	
@@ -56,7 +49,6 @@ namespace bfzq {
 		Node<T>* _head = nullptr;
 		Node<T>* _tail = nullptr;
 		unsigned int _length = 0;
-		
 	} ;
 	
 	template <typename T>
@@ -183,11 +175,13 @@ namespace bfzq {
     
     template <typename T>
     T List<T>::operator[](unsigned int idx) {
-        T t ;
-        foreach([&t](T _t) {
-            t = _t ;
-        }) ;
-        return t ;
+        Node<T>* tmp = _head ;
+		unsigned int i = 0 ;
+		while (i < idx) {
+            tmp = tmp->next ;
+			i++ ;
+		}
+        return tmp->v ;
     }
 }
 

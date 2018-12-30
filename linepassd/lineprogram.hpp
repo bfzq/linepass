@@ -8,9 +8,9 @@
 
 #ifndef lineprogram_hpp
 #define lineprogram_hpp
-#include "mainprogram.hpp"
-#include "linesecret.hpp"
-#include "link.hpp"
+#include "../common/mainprogram.hpp"
+#include "../common/linesecret.hpp"
+#include "../common/link.hpp"
 #include "mysqlc.h"
 #include <unistd.h>
 #include "comline.hpp"
@@ -72,6 +72,7 @@ private:
 private:
 	void showUserAccount(struct command comma, struct user_config* uc, int client_socket) ; // 查询用户帐号
 	void putAccountToServer(struct command comma, struct user_config* uc, int client_socket) ; // 添加用户帐号
+	void editAccount(struct command comma, struct user_config* uc, int client_socket) ;
 };
 
 #endif /* lineprogram_hpp */

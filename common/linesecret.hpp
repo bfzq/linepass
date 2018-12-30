@@ -9,7 +9,7 @@
 #ifndef linesecret_hpp
 #define linesecret_hpp
 #include <iostream>
-#include <aes.h>
+#include <cryptopp/aes.h>
 #include <string>
 #include <map>
 #include <string.h>

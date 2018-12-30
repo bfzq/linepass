@@ -32,7 +32,7 @@ bool Mysqlc::connect(const char* host, const char* user, const char* password, c
 	if (!_mysql) {
 		_mysql = mysql_init(nullptr);
 	}
-	if (!mysql_real_connect(_mysql, host, user, password, db, port, NULL, 0)) {
+	if (!mysql_real_connect(_mysql, host, user, password, db, port, NULL, CLIENT_FOUND_ROWS)) {
 		throw MysqlcException(errNo(), (char*)error()) ;
 	}
 	return true;

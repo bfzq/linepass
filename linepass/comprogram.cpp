@@ -77,6 +77,7 @@ bool ComProgram::interactive() {
 					unsigned int num = 0 ; // 返回结果数
 					unsigned revcStatus =  0; // 正常查询结果
 					do {
+                        
 						link->clientRevc([&revcStatus,&type, this](struct proto_msg pm){
 							type = pm.server ;
 							switch(pm.server) {

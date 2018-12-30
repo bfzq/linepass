@@ -7,12 +7,12 @@ ifeq ($(OS),Linux)
 	MYSQL_LIB_PATH = `mysql_config --variable=pkglibdir`
 else 
 	MYSQL_INCLUDE = -I/usr/local/mysql/include
-	MYSQL_LIB_PATH = /usr/local/mysql/lib/
+	MYSQL_LIB_PATH = /usr/local/mysql/lib
 endif
 
 COMMON = ../common
 INC_COMMON = -I$(COMMON)
-INC_CRYPTO = -I/usr/local/include/cryptopp
+#INC_CRYPTO = -I/usr/local/include/cryptopp
 
 LIB_CRYPTO = -lcryptopp
 LIB_JSON = -ljsoncpp

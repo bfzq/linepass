@@ -1,4 +1,3 @@
-//
 //  lineprogram.cpp
 //  LinePassword
 //
@@ -8,9 +7,9 @@
 
 #include "lineprogram.hpp"
 
-
 server_config::server_config(std::map<std::string, std::string>* m) {
 	init(m) ;
+	
 }
 
 void server_config::init(std::map<std::string, std::string> * m) {
@@ -18,11 +17,14 @@ void server_config::init(std::map<std::string, std::string> * m) {
 	poolnum = atoi((*m)[POOLNUM].c_str()) ;
 }
 
+
+
 LineProgram::LineProgram() {
 	ls = new LineSecret() ;
 	link = new LineLink(LineLink::SERVER) ;
 	mp = new MysqlcPool() ;
 }
+
 
 LineProgram::~LineProgram() {
 	delete ls;
@@ -37,7 +39,7 @@ int LineProgram::main(int argc, char **argv) {
 		cl->printHelpInfo() ;
 		return 0 ;
 	}
-	//	intoDameon() ; // xcode 编辑期间关闭
+	// intoDameon() ; // xcode 编辑期间关闭
 	getServerPara() ;
 	initMysqlPool() ;
 	hideArg(argc,argv,"mysql-passwd") ; // 隐藏密码
@@ -101,6 +103,10 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 		case type::show:{
 			showUserAccount(cmd, uc, client_socket) ;
 			break;
+		}
+        case type::edit:{
+			editAccount(cmd, uc, client_socket) ;
+			break ;
 		}
 		default:
 			break;
@@ -323,10 +329,6 @@ void LineProgram::showUserAccount(struct command comma, struct user_config* uc, 
 			json[std::to_string(account.aid)] = item ;
 		}) ;
 		
-		
-		
-		
-		
 		/*
 		 * 返回客户账户数据结束
 		 */
@@ -342,7 +344,58 @@ void LineProgram::showUserAccount(struct command comma, struct user_config* uc, 
 	local_mysql = nullptr ;
 }
 
+void LineProgram::editAccount(struct command comma, struct user_config* uc, int client_socket) 
+{
+    Mysqlc* local_mysql = mp->getMysqlCon() ;
+    try {
+		/* get zhe account id and delete id from list. */
+		std::string account_id = comma.list[0].value ;
+		comma.list.Delete(0) ;
 
+		
+	    local_mysql->begin() ;
+		comma.list.foreach([&account_id, &local_mysql] (Field field) {
+	   		std::string secretstr ;
+		    if (field.secret)
+			{
+				secretstr = ECB_AESEncryptStr(aesDbKey, field.value.c_str(), field.value.size()) ;
+	       } else
+		    {
+			   secretstr = field.value ;
+			}
+				std::string sql_update = "update field_list set value='" + secretstr 
+				+ "',secert=" + std::to_string(field.secret) + " where accountsid = " + account_id 
+				+ " and field = '" + field.fieldName + "'";	
+				bool haveData = false ;
+				/*update field.*/
+				local_mysql->execute(sql_update.c_str(), [&haveData](long affected_rows){
+							if (affected_rows) 
+							{
+								haveData = true ;
+							}
+						}) ;
+				if (!haveData) 
+				{	/*if there isn't field , add it*/
+					std::string sql_insert = "insert into field_list(accountsid,field,value,secert) value(" 
+						+ account_id +",'"+ field.fieldName +"','"+ secretstr +"',"+ std::to_string(field.secret) +")" ;
+					local_mysql->execute(sql_insert.c_str(), nullptr);
+				}
+			}) ;
+		local_mysql->commit() ;
+		/*
+                 * 返回客户信息, ok
+                 */
+                std::string backinfo = "the edit is success." ;
+                feedBack(client_socket, MESSAGE, backinfo.c_str(), backinfo.size()) ;
+    } catch (MysqlcException& me) {
+        local_mysql->rollback() ;
+		/*
+                 * 返回客户信息, err
+                 */
+                std::string backinfo = "the edit is error." ;
+                feedBack(client_socket, MESSAGE, backinfo.c_str(), backinfo.size()) ;
+    }
+}
 
 
 // 返回数据

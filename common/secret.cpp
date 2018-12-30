@@ -10,6 +10,7 @@
 //	return i ;
 //}
 
+
 std::string ECB_AESEncryptStr(std::string sKey, const char *plainText, size_t len)
 {
     std::string outstr;
