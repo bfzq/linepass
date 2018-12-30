@@ -13,7 +13,7 @@
 
 `edit {id:x} {title | company | account | passwd}`
 
-`exit` 
+`exit` `\q`
 
 ### 安装
 ```shell
