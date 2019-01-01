@@ -7,11 +7,13 @@
 ## 客户端
 语法 e.g.
 
-`show {all | title:xxx}` 
+`show {f:y | v:y | ...}` 
 
-`put [title:xxx | company:xxx | account:youraccount | passwd:*"yourpassword"]`
+`put [x:y | f4:*"yourpassword" | ...]`
 
-`edit {id:x} {title | company | account | passwd}`
+`edit {id:x} {x:xxx | x:*"passwd" | ...}`
+
+`del {id:x} [x | ...]`
 
 `exit` `\q`
 
