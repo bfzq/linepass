@@ -108,6 +108,11 @@ void LineProgram::commandWork(struct user_config* uc, int client_socket,uint8_t 
 			editAccount(cmd, uc, client_socket) ;
 			break ;
 		}
+		case type::del:
+		{
+			delAccount(cmd, uc, client_socket) ;
+			break ;
+		}
 		default:
 			break;
 	}
@@ -395,6 +400,43 @@ void LineProgram::editAccount(struct command comma, struct user_config* uc, int 
                 std::string backinfo = "the edit is error." ;
                 feedBack(client_socket, MESSAGE, backinfo.c_str(), backinfo.size()) ;
     }
+	mp->backMysqlCon(local_mysql) ;
+	local_mysql = nullptr ;
+}
+
+void LineProgram::delAccount(struct command comma, struct user_config* uc, int client_socket) 
+{
+	/*get a mysql connection*/
+	Mysqlc* local_mysql = mp->getMysqlCon() ;
+	std::string accountid = comma.list[0].value ;
+	comma.list.Delete(0) ;
+	try {
+		std::string sql_delete = "delete from field_list where accountsid = " +  accountid;
+		comma.list.foreach([&sql_delete] (Field field) {
+			static bool mark = false ;
+			if (mark) {
+				sql_delete = sql_delete + " or field = '" + field.fieldName + "'" ;
+			} else {
+				sql_delete = sql_delete + " and field = '" + field.fieldName + "'" ;
+				mark = true ;
+			}
+		}) ;
+		std::string sql_delete_2 = "delete from accounts where id = "+ accountid +" and not exists (select 1 from field_list where accountsid = "+ accountid +") ;";
+
+		local_mysql->begin() ;
+		local_mysql->execute(sql_delete.c_str(), nullptr) ;
+		local_mysql->execute(sql_delete_2.c_str(), nullptr) ;
+		local_mysql->commit() ;
+		std::string binfo = "delete success.";
+		feedBack(client_socket, MESSAGE ,binfo.c_str(), binfo.size()) ;
+	} catch (MysqlcException& me) {
+		local_mysql->rollback() ;
+		std::string binfo = "delete error.";
+		feedBack(client_socket, MESSAGE, binfo.c_str(), binfo.size()) ;
+	}
+	mp->backMysqlCon(local_mysql) ;
+//    delete local_mysql ;
+	local_mysql = nullptr ;
 }
 
 

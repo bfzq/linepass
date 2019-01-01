@@ -35,7 +35,7 @@ namespace bfzq {
 	public:
 		void Insert(T) ;
 		bool Delete(T&) ;
-		bool Delete(unsigned int index) ;
+		bool Delete(int index) ;
 		void foreach(std::function<void(T)>) const;
 //        T getItem
 		unsigned int size() ;
@@ -48,7 +48,7 @@ namespace bfzq {
 	private:
 		Node<T>* _head = nullptr;
 		Node<T>* _tail = nullptr;
-		unsigned int _length = 0;
+		int _length = 0;
 	} ;
 	
 	template <typename T>
@@ -91,24 +91,42 @@ namespace bfzq {
 	}
 	
 	template <typename T>
-	bool List<T>::Delete(unsigned int index) {
+	bool List<T>::Delete(int index) {
 		if (index > _length) return false ;
 		Node<T>* finger = _head ;
-		for (unsigned int i = 0; i < _length && finger->next != nullptr; i++, finger = finger->next) {
+		for (int i = 0; i < _length; i++, finger = finger->next) {
 			if (i == index) {
-				if (finger == _head) {
-					if (_tail == _head) {
-						_tail = _head->next ;
-					}
-					_head = _head->next ;
-					_head->per = nullptr ;
-					delete finger ;
-				}else {
-					finger->per->next = finger->next ;
-					finger->next->per = finger->per ;
-					delete finger ;
-				}
-				finger = nullptr ;
+//                if (finger == _head) {
+//                    if (_tail == _head) {
+//                        _tail = _head->next ;
+//                    }
+////                    _head->per = nullptr ;
+//                    _head = _head->next ;
+//                    delete finger ;
+//                }else {
+//                    finger->per->next = finger->next ;
+//                    finger->next->per = finger->per ;
+//                    delete finger ;
+//                }
+//                Node<T>* h = finger ;
+                
+//                Node<T>*
+//                finger
+//                finger = nullptr ;
+                if (i == 0) {
+                    _head = finger->next ;
+                    if (_head) _head->per = nullptr ;
+                }
+                if (i == _length - 1) {
+                    _tail = finger->per ;
+                    if (_tail) _tail->next = nullptr ;
+                }
+                if (0 < i && i < _length - 1) {
+                    finger->per->next = finger->next ;
+                    finger->next->per = finger->per ;
+                }
+                delete finger ;
+                finger = nullptr ;
 				_length-- ;
 				return true ;
 			}

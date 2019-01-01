@@ -72,7 +72,8 @@ private:
 private:
 	void showUserAccount(struct command comma, struct user_config* uc, int client_socket) ; // 查询用户帐号
 	void putAccountToServer(struct command comma, struct user_config* uc, int client_socket) ; // 添加用户帐号
-	void editAccount(struct command comma, struct user_config* uc, int client_socket) ;
+	void editAccount(struct command comma, struct user_config* uc, int client_socket) ; // 编辑用户账号
+	void delAccount(struct command comma, struct user_config* uc, int client_socket) ; // 删除用户账号
 };
 
 #endif /* lineprogram_hpp */

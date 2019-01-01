@@ -23,7 +23,7 @@ Mysqlc::Mysqlc() {
 
 
 Mysqlc::~Mysqlc() {
-	disConnect();
+//    disConnect();
 	mysql_thread_end();
 }
 
@@ -145,6 +145,7 @@ bool Mysqlc::setOption(enum mysql_option option, const void *arg) {
 
 
 bool Mysqlc::alive() {
+    if (!_mysql) return false ;
     if (!mysql_ping(_mysql)) {
         return true ;
     } else {
