@@ -8,9 +8,9 @@
 
 #ifndef lineprogram_hpp
 #define lineprogram_hpp
-#include "../common/mainprogram.hpp"
-#include "../common/linesecret.hpp"
-#include "../common/link.hpp"
+#include "mainprogram.hpp"
+#include "linesecret.hpp"
+#include "link.hpp"
 #include "mysqlc.h"
 #include <unistd.h>
 #include "comline.hpp"

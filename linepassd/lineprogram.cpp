@@ -39,7 +39,7 @@ int LineProgram::main(int argc, char **argv) {
 		cl->printHelpInfo() ;
 		return 0 ;
 	}
-	// intoDameon() ; // xcode 编辑期间关闭
+	// intoDameon() ; // DEBUG期间关闭
 	getServerPara() ;
 	initMysqlPool() ;
 	hideArg(argc,argv,"mysql-passwd") ; // 隐藏密码
@@ -148,7 +148,6 @@ void LineProgram::tasks() {
 				 *	解密数据体
 				 */
 				uint8_t* unsafeData = (uint8_t*)ECB_AESDecryptStr(aesKey,(const char*)data).c_str() ;
-				
 				
 				switch (ph.server) {
 						// 登录验证
@@ -447,6 +446,7 @@ void LineProgram::feedBack(int client_socket, Server server, const char* unsafed
 	
 	uint32_t len ; // 网络报文长度
 	uint8_t* pdata = link->encode(mg, len) ;
+	std::cout << len << std::endl ;
 	
 	send(client_socket, pdata, len, 0) ;
 }
