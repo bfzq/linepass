@@ -1,4 +1,0 @@
-/Users/bfzq/Documents/projects/linepass/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/bfzq/Documents/projects/linepass/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/bfzq/Documents/projects/linepass/cmake-build-debug/CMakeFiles/linepassd.dir
-/Users/bfzq/Documents/projects/linepass/cmake-build-debug/CMakeFiles/linepass.dir
