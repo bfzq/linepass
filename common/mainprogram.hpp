@@ -12,14 +12,14 @@
 #include <string.h>
 class MainProgram {
 protected:
-	ComLine* cl ;
+  ComLine* cl;
 public:
-	MainProgram() ;
-	virtual ~MainProgram() ;
+  MainProgram();
+  virtual ~MainProgram();
 public:
-	virtual int main(int argc, char* argv[]);
-	virtual int main();
-	void hideArg(int argc, char **argv, const char *arg);
+  virtual int main(int argc, char* argv[]);
+  virtual int main();
+  void hideArg(int argc, char **argv, const char *arg);
 };
 
 #endif /* mainprogram_hpp */

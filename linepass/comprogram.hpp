@@ -27,38 +27,38 @@
 #define CONNECTPASSWORD "line-passwd"
 //#define <#macro#>
 
-extern const unsigned char* LINETESTKEY ;
+extern const unsigned char* LINETESTKEY;
 
 
 
 struct client_config {
-	int connect_port ;
-	std::string connect_host ;
-	std::string connect_user ;
-	std::string connect_password ;
-	client_config() {};
-	client_config(std::map<std::string, std::string>*) ;
-	void init(std::map<std::string, std::string>*) ;
+  int connect_port;
+  std::string connect_host;
+  std::string connect_user;
+  std::string connect_password;
+  client_config() {};
+  client_config(std::map<std::string, std::string>*);
+  void init(std::map<std::string, std::string>*);
 };
 
 class ComProgram : public MainProgram {
 private:
-	LineLink* link ;
-//	ComLine* lc ;
-	LineSecret* ls ;
-	Command* cmd ;
-	struct client_config cc ; // 连接信息
-//	struct user_config uc ; // 登录用户信息
+  LineLink* link;
+//  ComLine* lc;
+  LineSecret* ls;
+  Command* cmd;
+  struct client_config cc; // 连接信息
+//  struct user_config uc; // 登录用户信息
 private:
-	bool certify(LineLink*) ;
-	bool connectServer() ;
-	bool interactive() ;
+  bool certify(LineLink*);
+  bool connectServer();
+  bool interactive();
 public:
-	ComProgram() ;
-	~ComProgram() ;
+  ComProgram();
+  ~ComProgram();
 public:
-	int main(int argc, char* argv[]) ;
-	int main() ;
+  int main(int argc, char* argv[]);
+  int main();
 };
 
 #endif /* comprogram_hpp */

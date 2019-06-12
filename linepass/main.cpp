@@ -10,9 +10,9 @@
 #include "comprogram.hpp"
 
 int main(int argc,char* argv[]) {
-	ComProgram *cp = new ComProgram() ;
-	int retVal = cp->main(argc, argv) ;
-	delete cp ;
-	cp = nullptr ;
-	return retVal ;
+  ComProgram *cp = new ComProgram();
+  int retVal = cp->main(argc, argv);
+  delete cp;
+  cp = nullptr;
+  return retVal;
 }

@@ -75,7 +75,7 @@ LOCK TABLES `users` WRITE;
 
 INSERT INTO `users` (`id`, `username`, `password`, `nickname`)
 VALUES
-	(1,'admin','7B2FFF48F9397BF933E32EA46030DBE4','admin_test');
+  (1,'admin','7B2FFF48F9397BF933E32EA46030DBE4','admin_test');
 
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;

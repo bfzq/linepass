@@ -8,6 +8,7 @@
 
 #include "logs.hpp"
 
-void log(const char* l) {
-	printf("%s\n", l) ;
+void log(const char* l) 
+{
+  printf("%s\n", l);
 }

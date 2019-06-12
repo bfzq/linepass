@@ -30,50 +30,50 @@
 #define POOLNUM "pool-num"
 
 
-extern const unsigned char* LINETESTKEY ;
+extern const unsigned char* LINETESTKEY;
 
 
 
 struct server_config {
-	int listen_port ;
-	uint16_t poolnum ;
-	server_config() {};
-	server_config(std::map<std::string, std::string>*) ;
-	void init(std::map<std::string, std::string>*) ;
+  int listen_port;
+  uint16_t poolnum;
+  server_config() {};
+  server_config(std::map<std::string, std::string>*);
+  void init(std::map<std::string, std::string>*);
 };
 
 class LineProgram : public MainProgram {
 private:
-	struct server_config sc ; // 系统参数
-	LineSecret* ls ; // 加密
-	LineLink* link ; // 网络
-    MysqlcPool* mp ; // mysql连接池
-	struct mysql_config mc ; // mysql 连接信息
-	Granalysis granalysis ; // 语法解析器
+  struct server_config sc; // 系统参数
+  LineSecret* ls; // 加密
+  LineLink* link; // 网络
+    MysqlcPool* mp; // mysql连接池
+  struct mysql_config mc; // mysql 连接信息
+  Granalysis granalysis; // 语法解析器
 public:
-	LineProgram() ;
-	~LineProgram() ;
+  LineProgram();
+  ~LineProgram();
 public:
-	int main(int argc, char* argv[]) ;
-	int main() ;
+  int main(int argc, char* argv[]);
+  int main();
 private:
-	void initMysqlPool() ;
-	bool intoDameon() ; //守护程序
-	void tasks() ;
-	void initParameter(int argc, char* argv[]) ;
-	void getServerPara() ;
-//	bool certify(int) ;
-	bool certify(struct user_config*, uint8_t*) ;
-	// 返回客户端消息
-	void feedBack(int client_socket, Server server , const char* unsafedata, size_t datasize) ;
-//	void hideArg(int argc, char** argv, const char* arg) ;
+  void initMysqlPool();
+  bool intoDameon(); //守护程序
+  void tasks();
+  void initParameter(int argc, char* argv[]);
+  void getServerPara();
+//  bool certify(int);
+  bool certify(struct user_config*, uint8_t*);
+  // 返回客户端消息
+  void feedBack(int client_socket, Server server , const char* unsafedata, size_t datasize);
+//  void hideArg(int argc, char** argv, const char* arg);
 private:
-	void commandWork(struct user_config* uc, int client_socket, uint8_t* cmd) ;
+  void commandWork(struct user_config* uc, int client_socket, uint8_t* cmd);
 private:
-	void showUserAccount(struct command comma, struct user_config* uc, int client_socket) ; // 查询用户帐号
-	void putAccountToServer(struct command comma, struct user_config* uc, int client_socket) ; // 添加用户帐号
-	void editAccount(struct command comma, struct user_config* uc, int client_socket) ; // 编辑用户账号
-	void delAccount(struct command comma, struct user_config* uc, int client_socket) ; // 删除用户账号
+  void showUserAccount(struct command comma, struct user_config* uc, int client_socket); // 查询用户帐号
+  void putAccountToServer(struct command comma, struct user_config* uc, int client_socket); // 添加用户帐号
+  void editAccount(struct command comma, struct user_config* uc, int client_socket); // 编辑用户账号
+  void delAccount(struct command comma, struct user_config* uc, int client_socket); // 删除用户账号
 };
 
 #endif /* lineprogram_hpp */

@@ -11,6 +11,6 @@
 
 #include <stdio.h>
 
-void log(const char*) ;
+void log(const char*);
 
 #endif /* logs_hpp */

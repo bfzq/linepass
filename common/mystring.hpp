@@ -14,7 +14,7 @@
 
 class MyString : public std::string {
 public:
-	std::string operator()(int a) ;
+  std::string operator()(int a);
 };
 
 #endif /* mystring_hpp */

@@ -3,15 +3,15 @@
 
 namespace fivestar
 {
-	class nocopyable
-	{
-	private:
-		nocopyable(const nocopyable& x) = delete;
-		nocopyable& operator=(const nocopyable&x) = delete;
-	public:
-		nocopyable() = default;
-		~nocopyable() = default;
-	};
+  class nocopyable
+  {
+  private:
+    nocopyable(const nocopyable& x) = delete;
+    nocopyable& operator=(const nocopyable&x) = delete;
+  public:
+    nocopyable() = default;
+    ~nocopyable() = default;
+  };
 
 }
 

@@ -9,5 +9,5 @@
 #include "mystring.hpp"
 
 std::string MyString::operator()(int a) {
-	return std::string() ;
+  return std::string();
 }

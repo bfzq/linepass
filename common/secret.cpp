@@ -1,13 +1,13 @@
 #include "secret.h"
 
 //unsigned int ustrlen(const uint8_t* ustr) {
-//	unsigned int i = 0;
-//	while ('\0' != ustr[i]) {
-//		printf("#%d# %x-%c\n", i,ustr[i],ustr[i]) ;
-//		i++ ;
-//	}
-//	printf("ustrlen: %u\n", i) ;
-//	return i ;
+//  unsigned int i = 0;
+//  while ('\0' != ustr[i]) {
+//    printf("#%d# %x-%c\n", i,ustr[i],ustr[i]);
+//    i++;
+//  }
+//  printf("ustrlen: %u\n", i);
+//  return i;
 //}
 
 
