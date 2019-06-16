@@ -3,7 +3,7 @@
 //  LinePassword
 //
 //  Created by Saber on 2018/4/23.
-//  Copyright © 2018年 Saber. All rights reserved.
+//  Copyright © 2018 Saber. All rights reserved.
 //
 
 #ifndef lineprogram_hpp
@@ -18,10 +18,8 @@
 #include "mysqlcpool.hpp"
 #include "secret.h"
 #include "const.h"
-//#include "linedata.hpp"
 #include <stdlib.h>
 #include "granalysis.hpp"
-//#include "json.h"
 #include "netstruct.hpp"
 
 
@@ -34,7 +32,8 @@ extern const unsigned char* LINETESTKEY;
 
 
 
-struct server_config {
+struct server_config
+{
   int listen_port;
   uint16_t poolnum;
   server_config() {};
@@ -44,12 +43,12 @@ struct server_config {
 
 class LineProgram : public MainProgram {
 private:
-  struct server_config sc; // 系统参数
-  LineSecret* ls; // 加密
-  LineLink* link; // 网络
-    MysqlcPool* mp; // mysql连接池
-  struct mysql_config mc; // mysql 连接信息
-  Granalysis granalysis; // 语法解析器
+  struct server_config sc; // 
+  LineSecret* ls; // 
+  LineLink* link; // 
+    MysqlcPool* mp; // my
+  struct mysql_config mc; // mysql 
+  Granalysis granalysis; // 
 public:
   LineProgram();
   ~LineProgram();
@@ -58,22 +57,22 @@ public:
   int main();
 private:
   void initMysqlPool();
-  bool intoDameon(); //守护程序
+  bool intoDameon(); //
   void tasks();
   void initParameter(int argc, char* argv[]);
   void getServerPara();
 //  bool certify(int);
   bool certify(struct user_config*, uint8_t*);
-  // 返回客户端消息
+  // 
   void feedBack(int client_socket, Server server , const char* unsafedata, size_t datasize);
 //  void hideArg(int argc, char** argv, const char* arg);
 private:
   void commandWork(struct user_config* uc, int client_socket, uint8_t* cmd);
 private:
-  void showUserAccount(struct command comma, struct user_config* uc, int client_socket); // 查询用户帐号
-  void putAccountToServer(struct command comma, struct user_config* uc, int client_socket); // 添加用户帐号
-  void editAccount(struct command comma, struct user_config* uc, int client_socket); // 编辑用户账号
-  void delAccount(struct command comma, struct user_config* uc, int client_socket); // 删除用户账号
+  void showUserAccount(struct command comma, struct user_config* uc, int client_socket); // 
+  void putAccountToServer(struct command comma, struct user_config* uc, int client_socket); // 
+  void editAccount(struct command comma, struct user_config* uc, int client_socket); // 
+  void delAccount(struct command comma, struct user_config* uc, int client_socket); // 
 };
 
 #endif /* lineprogram_hpp */
