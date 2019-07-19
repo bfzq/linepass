@@ -62,22 +62,22 @@ bool LineLink::init()
 {
   switch (job) 
   {
-  case SERVER:
-  {
-    int flag = 1;
-    // 创建服务器端套接字--IPv4协议，面向连接通信，TCP协议
-    if ((local_socket = socket(PF_INET,SOCK_STREAM,0)) < 0 
-      || setsockopt(local_socket, SOL_SOCKET, SO_REUSEADDR, &flag, 
-                    sizeof(flag)) < 0
-      // 将套接字绑定到服务器的网络地址上, 与std::bind不同
-      || bind(local_socket, (struct sockaddr *)&server_addr, 
-              sizeof(struct sockaddr)) < 0 
-       )
-    {
-      perror("init error");
-      return false;
-    }
-    threadPool.setMaxQueueSize(MAXQUEUE);
+    case SERVER:
+      {
+        int flag = 1;
+        // 创建服务器端套接字--IPv4协议，面向连接通信，TCP协议
+        if ((local_socket = socket(PF_INET,SOCK_STREAM,0)) < 0 
+            || setsockopt(local_socket, SOL_SOCKET, SO_REUSEADDR, &flag, 
+                          sizeof(flag)) < 0
+            // 将套接字绑定到服务器的网络地址上, 与std::bind不同
+            || bind(local_socket, (struct sockaddr *)&server_addr, 
+                    sizeof(struct sockaddr)) < 0 
+            )
+        {
+          perror("init error");
+          return false;
+        }
+        threadPool.setMaxQueueSize(MAXQUEUE);
     threadPool.start(MAXQUEUE);
     break;
     }
